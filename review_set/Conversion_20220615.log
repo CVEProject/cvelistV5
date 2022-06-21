@@ -1,0 +1,21 @@
+
+JSON files that failed to convert: 1 of 257017
+
+
+----- DETAILED RESULTS -----
+
+=== SECTION -- failed to convert errors ===
+JSON files that failed to convert (1): 
+/home/jwhitmore/Downloads/cvelist/2019/5xxx/CVE-2019-5797.json
+     <class '__main__.MissingRequiredPropertyValue'> -- /home/jwhitmore/Downloads/cvelist/2019/5xxx/CVE-2019-5797.json - CVE_data_meta no STATE - Required property missing from CVE -- 
+
+
+=== SECTION -- validation errors ===
+records with validation errors encountered: 6
+{   'CVE-2016-1000232': ['$.cveMetadata.dateReserved -- validator = pattern'],
+    'CVE-2022-29265': [   '$.containers.cna.timeline[0].time -- validator = '
+                          'pattern']}
+
+
+
+
