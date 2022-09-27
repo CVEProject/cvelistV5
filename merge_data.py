@@ -33,7 +33,10 @@ for i, years_set in enumerate(years_sets):
       for filename in os.listdir('review_set/' + year + '/' + cve_group):
         with open('review_set/{}/{}/{}'.format(year, cve_group, filename)) as file:
           # Read the CVE Record from file and save it
-          file_content = json.load(file)
+          file_content_tmp = json.load(file)
+          file_content = {
+            'cve': file_content_tmp
+          }
           count += 1
           print('{} {} {} {}/{}'.format(cve_group, i, count, year, filename)) 
           bulk_import_sets[i].append(file_content)
