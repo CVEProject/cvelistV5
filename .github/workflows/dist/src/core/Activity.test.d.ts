@@ -1,0 +1,12 @@
+import { ActivityStep, Activity } from './Activity.js';
+export declare const defaultStep0: ActivityStep;
+export declare const defaultStep1: ActivityStep;
+export declare const defaultStep5: ActivityStep;
+export declare const defaultStepPage1: ActivityStep;
+export declare const defaultStepPage2: ActivityStep;
+export declare const defaultStepNone: ActivityStep;
+export declare const defaultActivity: Activity;
+export declare const activity0: Activity;
+export declare const activity1: Activity;
+export declare const activity2: Activity;
+export declare const activityNone: Activity;
