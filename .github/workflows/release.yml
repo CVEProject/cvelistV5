@@ -1,0 +1,81 @@
+# Github Action for hourly releases
+
+name: CVE Release
+
+on:
+  # at 0 min after each hour
+  # note this does not include update at 0 min after each hour
+  #   since that job will be running in parallel to this
+  # note also that github does not guarantee specified time, and it can start much later than specified
+  schedule:
+    - cron: '0 * * * *'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: false
+        default: 'debug'
+jobs:
+  generate-name:
+    environment: deployment
+    runs-on: ubuntu-latest
+    outputs:
+      v_current_run_timestamp: ${{ steps.get-timestamp.outputs.out }}
+    steps:
+      - name: generate-name
+        id: generate-name
+        run: echo "out=$(date '+%Y-%m-%d_%H%M_UTC')" >> $GITHUB_OUTPUT
+  # create_artifacts:
+  #   needs: generate-name
+  #   environment: test
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: clone cves
+  #       uses: actions/checkout@v3
+  #     - name: tag repository
+  #       run: |
+  #         git tag cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
+  #         git push origin cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
+  #     - name: build cves for zip download
+  #       run: |
+  #         pwd
+  #         ls -al
+  #         zip -r cves.zip ./review_set -x "*/\.*"
+  #         # do a subset
+  #         # zip -r cves1999.zip ./review_set/1999 -x "*/\.*"
+  #     - name: Use the Upload Artifact GitHub Action
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: cves_${{ needs.generate-name.outputs.v_current_run_timestamp }}.zip
+  #         path: ./cves.zip
+  create_release:
+    needs: [generate-name]
+    environment: deployment
+    runs-on: ubuntu-latest
+    steps:
+      # - name: create release
+      #   id: create_release
+      #   uses: actions/create-release@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
+      #     release_name: CVE Release ${{ needs.generate-name.outputs.v_current_run_timestamp }}
+      #     draft: false
+      #     prerelease: false
+      #     # make_latest: true
+      - name: Update release notes
+        run: echo "CVEs updated" > release_notes.md
+      - name: create release with source code as artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          name: CVE ${{ needs.generate-name.outputs.v_current_run_timestamp }}
+          # body: Descriptions for CVE ${{ needs.generate-name.outputs.v_current_run_timestamp }} goes here
+          body_path: ./release_notes.md
+          tag_name: cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
+          files: |
+            release_notes.md
+            update_log.md
+            preview_cves/recent_activities.json
+          #   cves_${{ needs.generate-name.outputs.v_current_run_timestamp }}.zip
