@@ -8,8 +8,8 @@ on:
   #   in the CVE Release artifacts running in a separate workflow
   # note also that if this job runs longer than 5 minutes,
   #   the next job will run 5 minutes after this completes
-  schedule:
-    - cron: '*/5 * * * *'
+  #schedule:
+  #  - cron: '*/5 * * * *'
   # Enables manual runs of this workflow from the Actions tab
   workflow_dispatch:
     inputs:
