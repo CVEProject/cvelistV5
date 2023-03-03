@@ -25,7 +25,7 @@ jobs:
     steps:
       - name: generate-name
         id: generate-name
-        run: echo "out=$(date '+%Y-%m-%d_%H%M_UTC')" >> $GITHUB_OUTPUT
+        run: echo "out=$(date '+%Y-%m-%d_%H00Z')" >> $GITHUB_OUTPUT
   # create_artifacts:
   #   needs: generate-name
   #   environment: test
