@@ -21,7 +21,7 @@ jobs:
     environment: deployment
     runs-on: ubuntu-latest
     outputs:
-      v_current_run_timestamp: ${{ steps.get-timestamp.outputs.out }}
+      v_current_run_timestamp: ${{ steps.generate-name.outputs.out }}
     steps:
       - name: generate-name
         id: generate-name
@@ -76,6 +76,5 @@ jobs:
           tag_name: cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
           files: |
             release_notes.md
-            update_log.md
-            preview_cves/recent_activities.json
+          #  preview_cves/recent_activities.json
           #   cves_${{ needs.generate-name.outputs.v_current_run_timestamp }}.zip
