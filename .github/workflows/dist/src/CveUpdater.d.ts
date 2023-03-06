@@ -9,7 +9,6 @@ export declare class CveUpdater {
     _recent_activities_path: string;
     _activityLog: ActivityLog;
     constructor(activity: string, logOptions: ActivityLogOptions);
-    /** writes to activity file */
     /** retrieves the CVEs in a window of time
      *  @param startWindow requested start window, MUST BE ISO
      *  @param endWindow requested end window, MUST BE ISO
@@ -38,7 +37,7 @@ export declare class CveUpdater {
      *  @returns an Activity with data and properties OR
      *           null if params are detected to be a no-op
     */
-    getCvesByPage(page: number, writeDir?: string): Promise<Activity>;
+    getCvesByPage(page: number, writeDir?: string): Promise<ActivityStep>;
     /** reads recent activities data */
     readRecentActivities(): Activity[];
     /** write recent activities to file */

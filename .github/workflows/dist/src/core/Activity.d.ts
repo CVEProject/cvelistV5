@@ -20,11 +20,11 @@ export interface ActivityProps {
     status: ActivityStatus;
     errors?: ActivityError[];
     notes?: ActivityNotes;
-    delta: {
+    delta?: {
         newCves: string[];
         updatedCves: string[];
     };
-    steps: ActivityStep[];
+    steps?: ActivityStep[];
 }
 export interface ActivityStep {
     stepDescription: string;
