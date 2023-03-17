@@ -2,10 +2,9 @@
 
 > **Work In Progress** - use for notional workflow and integration only until the public release
 
-This repository is a JSON 5.0 view of the official CVE List. It is a work in progress.
+This repository is a read-only JSON 5.0 view of the official CVE List. It is a work in progress.
 
-- `preview_cves` directory contains all of the current CVEs from the official CVE Services API. It is named `preview_cves` because this repository is still a work in progress. It will eventually be named `cves` when current work is complete.  The baseline (from a git history point of view) is [Commit c56c2de
- committed 2023-03-02 21:18:43.000Z](https://github.com/CVEProject/cvelistV5/tree/c56c2de4ad9bb897e4bc03e800e7377ae31db3ab)
+- `preview_cves` directory contains all of the current CVEs from the official CVE Services API. It is named `preview_cves` because this repository is still a work in progress. It will eventually be named `cves` when development work is complete.  The baseline (from a git history point of view) is [Commit c56c2de](https://github.com/CVEProject/cvelistV5/tree/c56c2de4ad9bb897e4bc03e800e7377ae31db3ab)  committed 2023-03-02 21:18:43.000Z.
 - `review_set` directory has been removed. It contained old data from October 2022, and was only used for review purposes in October 2022.
 
 Until CVE Services "Hard Deploy" (targeted for 1st QT, 2023) is completed, the official published CVE List can be found at the following locations.
