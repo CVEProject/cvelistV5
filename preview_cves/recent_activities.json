@@ -1,8 +1,8 @@
 [
   {
-    "startTime": "2023-03-17T09:15:34.107Z",
-    "stopTime": "2023-03-17T09:15:35.202Z",
-    "duration": "1095 msecs",
+    "startTime": "2023-03-17T09:23:54.844Z",
+    "stopTime": "2023-03-17T09:23:56.357Z",
+    "duration": "1513 msecs",
     "name": "cves in window",
     "status": "completed",
     "errors": [],
@@ -13,14 +13,14 @@
     },
     "steps": [
       {
-        "startTime": "2023-03-17T09:15:34.107Z",
-        "stopTime": "2023-03-17T09:15:35.197Z",
-        "duration": "1090 msecs",
+        "startTime": "2023-03-17T09:23:54.845Z",
+        "stopTime": "2023-03-17T09:23:56.352Z",
+        "duration": "1507 msecs",
         "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
         "summary": {
-          "startWindow": "2023-03-17T06:15:33.479Z",
-          "endWindow": "2023-03-17T09:15:33.476Z",
-          "count": 29,
+          "startWindow": "2023-03-17T06:23:54.035Z",
+          "endWindow": "2023-03-17T09:23:54.032Z",
+          "count": 27,
           "cveIds": [
             "CVE-2021-24705",
             "CVE-2022-3343",
@@ -31,8 +31,6 @@
             "CVE-2023-0070",
             "CVE-2023-0150",
             "CVE-2023-1152",
-            "CVE-2023-1439",
-            "CVE-2023-1440",
             "CVE-2023-1441",
             "CVE-2023-1442",
             "CVE-2023-1443",
