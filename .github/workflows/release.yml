@@ -21,10 +21,10 @@ jobs:
     environment: deployment
     runs-on: ubuntu-latest
     outputs:
-      v_current_run_timestamp: ${{ steps.generate-name.outputs.out }}
+      v_current_run_timestamp: ${{ steps.get-timestamp.outputs.out }}
     steps:
       - name: generate-name
-        id: generate-name
+        id: get-timestamp
         run: echo "out=$(date '+%Y-%m-%d_%H00Z')" >> $GITHUB_OUTPUT
   # create_artifacts:
   #   needs: generate-name
@@ -76,5 +76,6 @@ jobs:
           tag_name: cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
           files: |
             release_notes.md
-          #  preview_cves/recent_activities.json
+            changes_since_midnight.md
+            preview_cves/recent_activities.json
           #   cves_${{ needs.generate-name.outputs.v_current_run_timestamp }}.zip

@@ -1,3 +1,4 @@
+import { Delta } from '../core/Delta.js';
 export interface ActivityError {
     [key: string]: string;
 }
@@ -20,10 +21,7 @@ export interface ActivityProps {
     status: ActivityStatus;
     errors?: ActivityError[];
     notes?: ActivityNotes;
-    delta?: {
-        newCves: string[];
-        updatedCves: string[];
-    };
+    delta?: Delta;
     steps?: ActivityStep[];
 }
 export interface ActivityStep {
@@ -48,10 +46,7 @@ export declare class Activity implements ActivityProps {
     status: ActivityStatus;
     errors?: ActivityError[];
     notes?: ActivityNotes;
-    delta: {
-        newCves: string[];
-        updatedCves: string[];
-    };
+    delta?: Delta;
     steps: ActivityStep[];
     constructor(props?: ActivityProps);
     equalTo(props: ActivityProps): boolean;

@@ -1,3 +1,6 @@
+/**
+ * Updates repository's CVEs using CveService
+ */
 import { Activity, ActivityStep } from './core/Activity.js';
 import { ActivityLogOptions, ActivityLog } from './core/ActivityLog.js';
 export declare const kActivity_UpdateByModificationDateWindow = "UPDATE_BY_MODIFICATION_DATE_WINDOW";
