@@ -1,5 +1,75 @@
 [
   {
+    "startTime": "2023-03-26T19:39:05.586Z",
+    "stopTime": "2023-03-26T19:39:07.699Z",
+    "duration": "2113 msecs",
+    "name": "cves in window",
+    "status": "completed",
+    "errors": [],
+    "notes": {},
+    "delta": {
+      "numberOfChanges": 8,
+      "new": [],
+      "updated": [
+        {
+          "cveId": "CVE-2021-45479"
+        },
+        {
+          "cveId": "CVE-2022-23790"
+        },
+        {
+          "cveId": "CVE-2022-23791"
+        },
+        {
+          "cveId": "CVE-2022-2178"
+        },
+        {
+          "cveId": "CVE-2022-45085"
+        },
+        {
+          "cveId": "CVE-2022-45086"
+        },
+        {
+          "cveId": "CVE-2022-45087"
+        },
+        {
+          "cveId": "CVE-2022-4557"
+        }
+      ],
+      "unknown": []
+    },
+    "steps": [
+      {
+        "startTime": "2023-03-26T19:39:05.587Z",
+        "stopTime": "2023-03-26T19:39:06.848Z",
+        "duration": "1261 msecs",
+        "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
+        "summary": {
+          "startWindow": "2023-03-26T16:39:04.819Z",
+          "endWindow": "2023-03-26T19:39:04.813Z",
+          "count": 15,
+          "cveIds": [
+            "CVE-2021-3855",
+            "CVE-2021-4105",
+            "CVE-2021-4195",
+            "CVE-2021-44196",
+            "CVE-2021-44197",
+            "CVE-2021-45479",
+            "CVE-2022-2178",
+            "CVE-2022-23790",
+            "CVE-2022-23791",
+            "CVE-2022-45085",
+            "CVE-2022-45086",
+            "CVE-2022-45087",
+            "CVE-2022-4557",
+            "CVE-2023-28858",
+            "CVE-2023-28859"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "startTime": "2023-03-26T19:33:24.136Z",
     "stopTime": "2023-03-26T19:33:26.025Z",
     "duration": "1889 msecs",
