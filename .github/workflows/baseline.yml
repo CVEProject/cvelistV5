@@ -41,9 +41,9 @@ jobs:
         run: |
           pwd
           ls -al
-          # zip -r cves.zip ./cves -x "*/\.*"
+          zip -r cves.zip ./cves -x "*/\.*"
           # do a subset
-          zip -r cves.zip ./cves/1999 -x "*/\.*"
+          # zip -r cves.zip ./cves/1999 -x "*/\.*"
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@v3
         with:
