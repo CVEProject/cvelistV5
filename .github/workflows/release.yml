@@ -70,7 +70,7 @@ jobs:
         with:
           workflow: baseline.yml
           workflow_conclusion: success
-          skip_unpack: false
+          skip_unpack: true
           if_no_artifact_found: fail
       - name: Update release notes
         run: echo "CVEs updated" > release_notes.md
@@ -85,4 +85,5 @@ jobs:
             release_notes.md
             changes_since_midnight.md
             preview_cves/recent_activities.json
+            *.zip
           #   cves_${{ needs.generate-name.outputs.v_current_run_timestamp }}.zip
