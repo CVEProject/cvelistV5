@@ -65,6 +65,13 @@ jobs:
       #     draft: false
       #     prerelease: false
       #     # make_latest: true
+      - name: Download artifact from baseline workflow
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: baseline.yml
+          workflow_conclusion: success
+          skip_unpack: false
+          if_no_artifact_found: fail
       - name: Update release notes
         run: echo "CVEs updated" > release_notes.md
       - name: create release with source code as artifacts

@@ -50,9 +50,8 @@ jobs:
           git remote set-url origin https://${GITHUB_TOKEN}@github.com/${{github.repository}}.git
           node ./.github/workflows/dist/index.js update ${{ github.event.inputs.params }}
           git push
-#       - name: output
-# #         if: ${{ envA }} != ${{ envB }}
-#         uses: actions/github-script@v6
-#         with:
-#           script: |
-#               core.notice("this is a notice")
+      - name: output
+        uses: actions/github-script@v6
+        with:
+          script: |
+              core.notice("this is a notice")
