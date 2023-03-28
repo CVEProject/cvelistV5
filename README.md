@@ -1,29 +1,47 @@
 # CVE List V5
 
-This repository is a JSON 5.0 cache of the official CVE List.  The `cves` directory 
-- contains all of the current CVEs from the official CVE Services API
-- is identical in content to the JSON files retrieved from [CVE Web Services](https://www.cve.org), with the exception that the files are prettyprinted here (using 4 spaces) for easier viewing
-- are about 5-15 minutes behind [CVE Web Services](https://www.cve.org)
+The [CVE List](https://www.cve.org/ResourcesSupport/Glossary?activeTerm=glossaryCVEList) is catalog of all [CVE Records](https://www.cve.org/ResourcesSupport/Glossary?activeTerm=glossaryRecord) identified by, or reported to, the [CVE Program](https://www.cve.org/).
 
-## How to Use
+This repository hosts bulk download files of CVE Records in [CVE JSON 5.0 format](https://www.cve.org/AllResources/CveServices#cve-json-5) (view the [schema]()). You may search, download, and use the content hosted in this repository, per the [CVE Program Terms of Use](https://www.cve.org/Legal/TermsOfUse).
 
-There are 2 ways to use this repository:
+**Legacy Format Downloads Available for Limited Time**—[Legacy format CVE List downloads](https://www.cve.org/Downloads#LegacyFormats), which are derived from CVE JSON 4.0, remain available for download on the CVE.ORG website for a limited time. These legacy formats will be **deprecated on or before December 31, 2023**. 
 
-1. use a git client to `clone` this repository as any other github repository.  Then use `git pull` to update the `cves` directory in your local clone whenever you need to get a current list of CVEs.
-2. use the release artifacts.  Due to the automated workflow, you will not be able to use this approach until 2023-03-29.  See Notes section below.
+## Releases
 
-## Deprecated Services
+This repository includes [release versions](https://github.com/CVEProject/cvelistV5/releases) of all current CVE Records generated from the official CVE Services API. Baseline releases are issued once per day at midnight and posted in the following file name format: CVE Prefix-Year-Month-Day _ Greenwich Mean Time (GMT), (e.g., “CVE 2023-03-28_0000Z”). Hourly updates are also provided on the [Releases](https://github.com/CVEProject/cvelistV5/releases) page using the same file name format, with time changes encoded at the end.
 
-1. https://cve.org/Downloads: This location contains the traditional downloadable CVE list that is available in the following formats: csv, html, tzt, xml.
+Each baseline or hourly release includes three items:
 
-2. https://github.com/CVEProject/cvelist (JSON 4.0): The github submission pilot will continue to be maintained during the course of the JSON 4.0 --> JSON 5.0 transition. The format is JSON 4.0 ( but it will include downconverted JSON 5.0 records)
+- ZIP file of all current CVE Records at midnight (e.g., “2023-03-28_all_CVEs.zip”)
+- ZIP file of all CVE Records added or modified since midnight (e.g., “2023-03-28_delta_CVEs_at_2200Z.zip”)
+- Release Notes for the specific release
 
-## Notes
+NOTE: The most [current release](https://github.com/CVEProject/cvelistV5/releases) contains the most up-to-date CVE List content. Hourly updates contain only the most recent updates.
 
-### 2023-03-28
-- "Hard deployment" was performed at `2023-03-28T09:12:34.651Z` when `preview_cves` directory was renamed `cves` in [commit 4100e8](https://github.com/CVEProject/cvelistV5/commit/4100e8bcf1e849a7ac87395bb3d86d23b39ea267).  
-  - Because this happened after midnight, the baseline zip file for the release was not built as designed.  It was built manually at `2023-03-28T09:26 GMT`, and again at `2023-03-28T09:45 GMT` but was still called `2023-03-28_all_CVEs_at_midnight.zip`.  
-  - As a result, no delta files will be built until 2023-03-29.
-- The older `preview_cves` has been replaced by `cves`.  It was only used for testing the workflows for building the files in the `cves` directory.
-- The even older `review_set` directory has been removed. It contained old data from October 2022, and was only used for review purposes in October 2022.
+## Known Issues with the cvelistV5 repository
+
+The CVE Program is currently aware of the following issues with regard to CVE List downloads. These issues are currently being addressed by the [CVE Automation Working Group (AWG)](https://www.cve.org/ProgramOrganization/WorkingGroups#AutomationWorkingGroupAWG). Updates or resolutions will be noted here when available.
+
+1. **Added 3/28/2023:** CVE Records published prior to 2023 may have significant publication, reserved, and update date discrepancies. As a result, this repository should not be used for CVE production metrics at this time. A fix will be forthcoming. 
+
+Issues listed in this section are not included in the [Repository Issue Tracker](https://github.com/CVEProject/cvelistV5/issues).
+
+## Reporting Issues 
+
+Please review the [Contribute.md](https://github.com/CVEProject/cve-services/blob/dev/CONTRIBUTING.md) page prior to using one of the following: 
+
+- [Report repository and download file issues](https://github.com/CVEProject/cvelistV5/issues) (via the cvelistV5 repository Issue Tracker on GitHub)
+- [Report issues with the content of a CVE Record](https://cveform.mitre.org/) (via the CVE Program Request Web Forms) 
+
+## Pull Requests Not Allowed 
+
+This repository contains CVE Records published by CVE Program partners. It does not accept pull requests.
+
+## Cloning this Repository
+
+You may clone the repository using [git clone](https://github.com/git-guides/git-clone). However, pull requests will not be accepted. 
+
+## Help
+
+Please use the [CVE Request Web Forms]( https://cveform.mitre.org/) and select “Other” from the dropdown.
 
