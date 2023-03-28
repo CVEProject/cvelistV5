@@ -11,3 +11,8 @@ The files here are identical in content to the JSON files retrieved from the [CV
 1. https://cve.org/Downloads: This location contains the traditional downloadable CVE list that is available in the following formats: csv, html, tzt, xml.
 
 2. https://github.com/CVEProject/cvelist (JSON 4.0): The github submission pilot will continue to be maintained during the course of the JSON 4.0 --> JSON 5.0 transition. The format is JSON 4.0 ( but it will include downconverted JSON 5.0 records)
+
+## Notes
+
+### 2023-03-28
+"Hard deployment" was performed at `2023-03-28T09:12:34.651Z` when `preview_cves` directory was renamed `cves` in [commit 4100e8](https://github.com/CVEProject/cvelistV5/commit/4100e8bcf1e849a7ac87395bb3d86d23b39ea267).  Because this happened after midnight, the baseline zip file for the release was not built as designed.  It was built manually at `2023-03-28T09:26 GMT`, and again at `2023-03-28T09:45 GMT` but was still called `2023-03-28_all_CVEs_at_midnight.zip`.
