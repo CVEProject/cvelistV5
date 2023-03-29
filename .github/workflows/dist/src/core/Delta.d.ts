@@ -3,7 +3,6 @@
  */
 import { CveCore } from './CveCore.js';
 export declare type IsoDate = string;
-export declare type CveId = string;
 export declare enum DeltaQueue {
     kNew = 1,
     kPublished = 2,
@@ -20,9 +19,15 @@ export declare class Delta {
      *                   deltas to the privous ones (default is none)
      */
     constructor(prevDelta?: Partial<Delta>);
-    /** returns useful components of a CveID:
-     *   - its name
-     *   - its partial path in the repository
+    /**
+     * Factory that generates a new Delta from git log based on a time window
+     * @param start git log start time window
+     * @param stop git log stop time window (defaults to now)
+     */
+    static newDeltaFromGitHistory(start: string, stop?: string, repository?: string): Promise<Delta>;
+    /** returns useful metadata given a repository filespec:
+     *   - its CVE ID (for example, CVE-1970-0001)
+     *   - its partial path in the repository (for example, ./abc/def/CVE-1970-0001)
      *  @param path a full or partial filespec (for example, ./abc/def/CVE-1970-0001.json)
      *  @todo should be in a separate CveId or Cve class
      */
@@ -53,4 +58,15 @@ export declare class Delta {
     add(cve: CveCore, queue: DeltaQueue): void;
     /** summarize the information in this Delta object in human-readable form */
     toText(): string;
+    /** writes the delta to a JSON file
+     *  @param relFilepath relative path from current directory
+    */
+    writeFile(relFilepath?: string): void;
+    /**
+     * Copies delta CVEs to a specified directory, and optionally zip the resulting directory
+     * @param relDir optional relative path from current directory to write the delta CVEs, default is `deltas` directory
+     * @param zipFile optional relative path from the current directory to write the zip file, default is NOT to write to zip
+     */
+    writeCves(relDir?: string, zipFile?: any): void;
+    writeTextFile(relFilepath?: string): void;
 }

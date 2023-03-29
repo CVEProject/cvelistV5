@@ -12,6 +12,7 @@ export declare class CveId {
      * @throws CveIdError if id is not a valid CVE ID
      */
     constructor(id: string | CveId);
+    toJSON(): string;
     /**
      * returns the partial CVE Path based on the CVE ID
      * @returns the partial CVE path, e.g., 1999/0xxx/CVE-1999-0001
@@ -22,14 +23,20 @@ export declare class CveId {
      * @returns the full CVE Path, e.g., /user/cve/cves/1999/0xxx/CVE-1999-0001
      */
     getFullCvePath(): string;
+    /**
+     * checks if a string is a valid CveID
+     *  @param str a string to test for CveID validity
+     *  @returns true iff str is a valid CveID
+     */
+    static isValidCveId(str: string): boolean;
     /** returns an array of CVE years represented as numbers [1999...2024] */
     static getAllYears(): ReadonlyArray<number>;
     /** given a cveId, returns the git hub repository partial directory it should go into
      *  @param cveId string representing the CVE ID (e.g., CVE-1999-0001)
-     *  @returns string representing the partial path the cve belongs in (e.g., /1999/1xxx/CVE-1999-0001)
+     *  @returns string representing the partial path the cve belongs in (e.g., /1999/1xxx)
     */
     static getCveDir(cveId: string | CveId): string;
-    /** given a cveId, returns the git hub repository partial path it should go into
+    /** given a cveId, returns the git hub repository partial path (directory and filename without extension) it should go into
      *  @param cveId string representing the CVE ID (e.g., CVE-1999-0001)
      *  @returns string representing the partial path the cve belongs in (e.g., /1999/1xxx/CVE-1999-0001)
     */

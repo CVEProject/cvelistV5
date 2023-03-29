@@ -1,6 +1,5 @@
 import { Cve5, CveMetadata, Containers } from './generated/transform.tools/cve5.js';
-export declare class CveIdError extends Error {
-}
+export { CveId, CveIdError } from './core/CveId.js';
 export interface WriteFileOptions {
     prettyprint?: boolean;
 }

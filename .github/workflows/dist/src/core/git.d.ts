@@ -1,5 +1,6 @@
 /** a wrapper/fascade class to make it easier to use git libraries from within cve utils */
 import { CommitResult, SimpleGit, Response, StatusResult } from 'simple-git';
+import { Delta } from './Delta.js';
 export { StatusResult, Response };
 export declare class Git {
     localDir: string;
@@ -32,4 +33,16 @@ export declare class Git {
      *
      */
     commit(msg: string): Promise<CommitResult>;
+    /**
+     *  logs commit hash and date between time window
+     */
+    logCommitHashInWindow(start: string, stop: string): Promise<string[]>;
+    /**
+     *  logs changed filenames in time window
+     */
+    logChangedFilenamesInTimeWindow(start: string, stop: string): Promise<string[]>;
+    /**
+     *  logs deltas in time window
+     */
+    logDeltasInTimeWindow(start: string, stop: string): Promise<Delta>;
 }

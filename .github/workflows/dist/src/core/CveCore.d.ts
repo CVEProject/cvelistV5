@@ -4,8 +4,9 @@
  */
 import { CveMetadata } from '../generated/transform.tools/cve5.js';
 import { Cve } from '../Cve.js';
+import { CveId } from './CveId.js';
+export { CveId, CveIdError } from './CveId.js';
 export declare type IsoDate = string;
-export declare type CveId = string;
 export declare class CveCore {
     cveId: CveId;
     state?: string;
@@ -16,6 +17,18 @@ export declare class CveCore {
     dateUpdated?: IsoDate;
     constructor(cveId: string | CveId);
     static fromCveMetadata(metadata: Partial<CveMetadata>): CveCore;
+    /**
+     * returns the CveId from a full or partial path (assuming the file is in the repository directory)
+     *  @param path the full or partial file path to CVE JSON file
+     *  @returns the CveId calculated from the filename, or "" if not valid
+     */
+    static getCveIdfromRepositoryFilePath(path: string): string;
+    /**
+     * returns the CveId from a full or partial path (assuming the file is in the repository directory)
+     *  @param path the full or partial file path to CVE JSON file
+     *  @returns the CveId calculated from the filename
+     */
+    static fromRepositoryFilePath(path: string): CveCore;
     static fromCve(cve: Cve): CveCore;
     toJson(whitespace?: number): string;
     getCvePath(): string;

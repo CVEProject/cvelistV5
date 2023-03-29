@@ -5569,6 +5569,2845 @@ exports.emitterEventNames = emitterEventNames;
 
 /***/ }),
 
+/***/ 66761:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const Utils = __nccwpck_require__(35182);
+const pth = __nccwpck_require__(71017);
+const ZipEntry = __nccwpck_require__(74057);
+const ZipFile = __nccwpck_require__(7744);
+
+const get_Bool = (val, def) => (typeof val === "boolean" ? val : def);
+const get_Str = (val, def) => (typeof val === "string" ? val : def);
+
+const defaultOptions = {
+    // option "noSort" : if true it disables files sorting
+    noSort: false,
+    // read entries during load (initial loading may be slower)
+    readEntries: false,
+    // default method is none
+    method: Utils.Constants.NONE,
+    // file system
+    fs: null
+};
+
+module.exports = function (/**String*/ input, /** object */ options) {
+    let inBuffer = null;
+
+    // create object based default options, allowing them to be overwritten
+    const opts = Object.assign(Object.create(null), defaultOptions);
+
+    // test input variable
+    if (input && "object" === typeof input) {
+        // if value is not buffer we accept it to be object with options
+        if (!(input instanceof Uint8Array)) {
+            Object.assign(opts, input);
+            input = opts.input ? opts.input : undefined;
+            if (opts.input) delete opts.input;
+        }
+
+        // if input is buffer
+        if (Buffer.isBuffer(input)) {
+            inBuffer = input;
+            opts.method = Utils.Constants.BUFFER;
+            input = undefined;
+        }
+    }
+
+    // assign options
+    Object.assign(opts, options);
+
+    // instanciate utils filesystem
+    const filetools = new Utils(opts);
+
+    // if input is file name we retrieve its content
+    if (input && "string" === typeof input) {
+        // load zip file
+        if (filetools.fs.existsSync(input)) {
+            opts.method = Utils.Constants.FILE;
+            opts.filename = input;
+            inBuffer = filetools.fs.readFileSync(input);
+        } else {
+            throw new Error(Utils.Errors.INVALID_FILENAME);
+        }
+    }
+
+    // create variable
+    const _zip = new ZipFile(inBuffer, opts);
+
+    const { canonical, sanitize } = Utils;
+
+    function getEntry(/**Object*/ entry) {
+        if (entry && _zip) {
+            var item;
+            // If entry was given as a file name
+            if (typeof entry === "string") item = _zip.getEntry(entry);
+            // if entry was given as a ZipEntry object
+            if (typeof entry === "object" && typeof entry.entryName !== "undefined" && typeof entry.header !== "undefined") item = _zip.getEntry(entry.entryName);
+
+            if (item) {
+                return item;
+            }
+        }
+        return null;
+    }
+
+    function fixPath(zipPath) {
+        const { join, normalize, sep } = pth.posix;
+        // convert windows file separators and normalize
+        return join(".", normalize(sep + zipPath.split("\\").join(sep) + sep));
+    }
+
+    return {
+        /**
+         * Extracts the given entry from the archive and returns the content as a Buffer object
+         * @param entry ZipEntry object or String with the full path of the entry
+         *
+         * @return Buffer or Null in case of error
+         */
+        readFile: function (/**Object*/ entry, /*String, Buffer*/ pass) {
+            var item = getEntry(entry);
+            return (item && item.getData(pass)) || null;
+        },
+
+        /**
+         * Asynchronous readFile
+         * @param entry ZipEntry object or String with the full path of the entry
+         * @param callback
+         *
+         * @return Buffer or Null in case of error
+         */
+        readFileAsync: function (/**Object*/ entry, /**Function*/ callback) {
+            var item = getEntry(entry);
+            if (item) {
+                item.getDataAsync(callback);
+            } else {
+                callback(null, "getEntry failed for:" + entry);
+            }
+        },
+
+        /**
+         * Extracts the given entry from the archive and returns the content as plain text in the given encoding
+         * @param entry ZipEntry object or String with the full path of the entry
+         * @param encoding Optional. If no encoding is specified utf8 is used
+         *
+         * @return String
+         */
+        readAsText: function (/**Object*/ entry, /**String=*/ encoding) {
+            var item = getEntry(entry);
+            if (item) {
+                var data = item.getData();
+                if (data && data.length) {
+                    return data.toString(encoding || "utf8");
+                }
+            }
+            return "";
+        },
+
+        /**
+         * Asynchronous readAsText
+         * @param entry ZipEntry object or String with the full path of the entry
+         * @param callback
+         * @param encoding Optional. If no encoding is specified utf8 is used
+         *
+         * @return String
+         */
+        readAsTextAsync: function (/**Object*/ entry, /**Function*/ callback, /**String=*/ encoding) {
+            var item = getEntry(entry);
+            if (item) {
+                item.getDataAsync(function (data, err) {
+                    if (err) {
+                        callback(data, err);
+                        return;
+                    }
+
+                    if (data && data.length) {
+                        callback(data.toString(encoding || "utf8"));
+                    } else {
+                        callback("");
+                    }
+                });
+            } else {
+                callback("");
+            }
+        },
+
+        /**
+         * Remove the entry from the file or the entry and all it's nested directories and files if the given entry is a directory
+         *
+         * @param entry
+         */
+        deleteFile: function (/**Object*/ entry) {
+            // @TODO: test deleteFile
+            var item = getEntry(entry);
+            if (item) {
+                _zip.deleteEntry(item.entryName);
+            }
+        },
+
+        /**
+         * Adds a comment to the zip. The zip must be rewritten after adding the comment.
+         *
+         * @param comment
+         */
+        addZipComment: function (/**String*/ comment) {
+            // @TODO: test addZipComment
+            _zip.comment = comment;
+        },
+
+        /**
+         * Returns the zip comment
+         *
+         * @return String
+         */
+        getZipComment: function () {
+            return _zip.comment || "";
+        },
+
+        /**
+         * Adds a comment to a specified zipEntry. The zip must be rewritten after adding the comment
+         * The comment cannot exceed 65535 characters in length
+         *
+         * @param entry
+         * @param comment
+         */
+        addZipEntryComment: function (/**Object*/ entry, /**String*/ comment) {
+            var item = getEntry(entry);
+            if (item) {
+                item.comment = comment;
+            }
+        },
+
+        /**
+         * Returns the comment of the specified entry
+         *
+         * @param entry
+         * @return String
+         */
+        getZipEntryComment: function (/**Object*/ entry) {
+            var item = getEntry(entry);
+            if (item) {
+                return item.comment || "";
+            }
+            return "";
+        },
+
+        /**
+         * Updates the content of an existing entry inside the archive. The zip must be rewritten after updating the content
+         *
+         * @param entry
+         * @param content
+         */
+        updateFile: function (/**Object*/ entry, /**Buffer*/ content) {
+            var item = getEntry(entry);
+            if (item) {
+                item.setData(content);
+            }
+        },
+
+        /**
+         * Adds a file from the disk to the archive
+         *
+         * @param localPath File to add to zip
+         * @param zipPath Optional path inside the zip
+         * @param zipName Optional name for the file
+         */
+        addLocalFile: function (/**String*/ localPath, /**String=*/ zipPath, /**String=*/ zipName, /**String*/ comment) {
+            if (filetools.fs.existsSync(localPath)) {
+                // fix ZipPath
+                zipPath = zipPath ? fixPath(zipPath) : "";
+
+                // p - local file name
+                var p = localPath.split("\\").join("/").split("/").pop();
+
+                // add file name into zippath
+                zipPath += zipName ? zipName : p;
+
+                // read file attributes
+                const _attr = filetools.fs.statSync(localPath);
+
+                // add file into zip file
+                this.addFile(zipPath, filetools.fs.readFileSync(localPath), comment, _attr);
+            } else {
+                throw new Error(Utils.Errors.FILE_NOT_FOUND.replace("%s", localPath));
+            }
+        },
+
+        /**
+         * Adds a local directory and all its nested files and directories to the archive
+         *
+         * @param localPath
+         * @param zipPath optional path inside zip
+         * @param filter optional RegExp or Function if files match will
+         *               be included.
+         * @param {number | object} attr - number as unix file permissions, object as filesystem Stats object
+         */
+        addLocalFolder: function (/**String*/ localPath, /**String=*/ zipPath, /**=RegExp|Function*/ filter, /**=number|object*/ attr) {
+            // Prepare filter
+            if (filter instanceof RegExp) {
+                // if filter is RegExp wrap it
+                filter = (function (rx) {
+                    return function (filename) {
+                        return rx.test(filename);
+                    };
+                })(filter);
+            } else if ("function" !== typeof filter) {
+                // if filter is not function we will replace it
+                filter = function () {
+                    return true;
+                };
+            }
+
+            // fix ZipPath
+            zipPath = zipPath ? fixPath(zipPath) : "";
+
+            // normalize the path first
+            localPath = pth.normalize(localPath);
+
+            if (filetools.fs.existsSync(localPath)) {
+                const items = filetools.findFiles(localPath);
+                const self = this;
+
+                if (items.length) {
+                    items.forEach(function (filepath) {
+                        var p = pth.relative(localPath, filepath).split("\\").join("/"); //windows fix
+                        if (filter(p)) {
+                            var stats = filetools.fs.statSync(filepath);
+                            if (stats.isFile()) {
+                                self.addFile(zipPath + p, filetools.fs.readFileSync(filepath), "", attr ? attr : stats);
+                            } else {
+                                self.addFile(zipPath + p + "/", Buffer.alloc(0), "", attr ? attr : stats);
+                            }
+                        }
+                    });
+                }
+            } else {
+                throw new Error(Utils.Errors.FILE_NOT_FOUND.replace("%s", localPath));
+            }
+        },
+
+        /**
+         * Asynchronous addLocalFile
+         * @param localPath
+         * @param callback
+         * @param zipPath optional path inside zip
+         * @param filter optional RegExp or Function if files match will
+         *               be included.
+         */
+        addLocalFolderAsync: function (/*String*/ localPath, /*Function*/ callback, /*String*/ zipPath, /*RegExp|Function*/ filter) {
+            if (filter instanceof RegExp) {
+                filter = (function (rx) {
+                    return function (filename) {
+                        return rx.test(filename);
+                    };
+                })(filter);
+            } else if ("function" !== typeof filter) {
+                filter = function () {
+                    return true;
+                };
+            }
+
+            // fix ZipPath
+            zipPath = zipPath ? fixPath(zipPath) : "";
+
+            // normalize the path first
+            localPath = pth.normalize(localPath);
+
+            var self = this;
+            filetools.fs.open(localPath, "r", function (err) {
+                if (err && err.code === "ENOENT") {
+                    callback(undefined, Utils.Errors.FILE_NOT_FOUND.replace("%s", localPath));
+                } else if (err) {
+                    callback(undefined, err);
+                } else {
+                    var items = filetools.findFiles(localPath);
+                    var i = -1;
+
+                    var next = function () {
+                        i += 1;
+                        if (i < items.length) {
+                            var filepath = items[i];
+                            var p = pth.relative(localPath, filepath).split("\\").join("/"); //windows fix
+                            p = p
+                                .normalize("NFD")
+                                .replace(/[\u0300-\u036f]/g, "")
+                                .replace(/[^\x20-\x7E]/g, ""); // accent fix
+                            if (filter(p)) {
+                                filetools.fs.stat(filepath, function (er0, stats) {
+                                    if (er0) callback(undefined, er0);
+                                    if (stats.isFile()) {
+                                        filetools.fs.readFile(filepath, function (er1, data) {
+                                            if (er1) {
+                                                callback(undefined, er1);
+                                            } else {
+                                                self.addFile(zipPath + p, data, "", stats);
+                                                next();
+                                            }
+                                        });
+                                    } else {
+                                        self.addFile(zipPath + p + "/", Buffer.alloc(0), "", stats);
+                                        next();
+                                    }
+                                });
+                            } else {
+                                process.nextTick(() => {
+                                    next();
+                                });
+                            }
+                        } else {
+                            callback(true, undefined);
+                        }
+                    };
+
+                    next();
+                }
+            });
+        },
+
+        /**
+         *
+         * @param {string} localPath - path where files will be extracted
+         * @param {object} props - optional properties
+         * @param {string} props.zipPath - optional path inside zip
+         * @param {regexp, function} props.filter - RegExp or Function if files match will be included.
+         */
+        addLocalFolderPromise: function (/*String*/ localPath, /* object */ props) {
+            return new Promise((resolve, reject) => {
+                const { filter, zipPath } = Object.assign({}, props);
+                this.addLocalFolderAsync(
+                    localPath,
+                    (done, err) => {
+                        if (err) reject(err);
+                        if (done) resolve(this);
+                    },
+                    zipPath,
+                    filter
+                );
+            });
+        },
+
+        /**
+         * Allows you to create a entry (file or directory) in the zip file.
+         * If you want to create a directory the entryName must end in / and a null buffer should be provided.
+         * Comment and attributes are optional
+         *
+         * @param {string} entryName
+         * @param {Buffer | string} content - file content as buffer or utf8 coded string
+         * @param {string} comment - file comment
+         * @param {number | object} attr - number as unix file permissions, object as filesystem Stats object
+         */
+        addFile: function (/**String*/ entryName, /**Buffer*/ content, /**String*/ comment, /**Number*/ attr) {
+            let entry = getEntry(entryName);
+            const update = entry != null;
+
+            // prepare new entry
+            if (!update) {
+                entry = new ZipEntry();
+                entry.entryName = entryName;
+            }
+            entry.comment = comment || "";
+
+            const isStat = "object" === typeof attr && attr instanceof filetools.fs.Stats;
+
+            // last modification time from file stats
+            if (isStat) {
+                entry.header.time = attr.mtime;
+            }
+
+            // Set file attribute
+            var fileattr = entry.isDirectory ? 0x10 : 0; // (MS-DOS directory flag)
+
+            // extended attributes field for Unix
+            // set file type either S_IFDIR / S_IFREG
+            let unix = entry.isDirectory ? 0x4000 : 0x8000;
+
+            if (isStat) {
+                // File attributes from file stats
+                unix |= 0xfff & attr.mode;
+            } else if ("number" === typeof attr) {
+                // attr from given attr values
+                unix |= 0xfff & attr;
+            } else {
+                // Default values:
+                unix |= entry.isDirectory ? 0o755 : 0o644; // permissions (drwxr-xr-x) or (-r-wr--r--)
+            }
+
+            fileattr = (fileattr | (unix << 16)) >>> 0; // add attributes
+
+            entry.attr = fileattr;
+
+            entry.setData(content);
+            if (!update) _zip.setEntry(entry);
+        },
+
+        /**
+         * Returns an array of ZipEntry objects representing the files and folders inside the archive
+         *
+         * @return Array
+         */
+        getEntries: function () {
+            return _zip ? _zip.entries : [];
+        },
+
+        /**
+         * Returns a ZipEntry object representing the file or folder specified by ``name``.
+         *
+         * @param name
+         * @return ZipEntry
+         */
+        getEntry: function (/**String*/ name) {
+            return getEntry(name);
+        },
+
+        getEntryCount: function () {
+            return _zip.getEntryCount();
+        },
+
+        forEach: function (callback) {
+            return _zip.forEach(callback);
+        },
+
+        /**
+         * Extracts the given entry to the given targetPath
+         * If the entry is a directory inside the archive, the entire directory and it's subdirectories will be extracted
+         *
+         * @param entry ZipEntry object or String with the full path of the entry
+         * @param targetPath Target folder where to write the file
+         * @param maintainEntryPath If maintainEntryPath is true and the entry is inside a folder, the entry folder
+         *                          will be created in targetPath as well. Default is TRUE
+         * @param overwrite If the file already exists at the target path, the file will be overwriten if this is true.
+         *                  Default is FALSE
+         * @param keepOriginalPermission The file will be set as the permission from the entry if this is true.
+         *                  Default is FALSE
+         * @param outFileName String If set will override the filename of the extracted file (Only works if the entry is a file)
+         *
+         * @return Boolean
+         */
+        extractEntryTo: function (
+            /**Object*/ entry,
+            /**String*/ targetPath,
+            /**Boolean*/ maintainEntryPath,
+            /**Boolean*/ overwrite,
+            /**Boolean*/ keepOriginalPermission,
+            /**String**/ outFileName
+        ) {
+            overwrite = get_Bool(overwrite, false);
+            keepOriginalPermission = get_Bool(keepOriginalPermission, false);
+            maintainEntryPath = get_Bool(maintainEntryPath, true);
+            outFileName = get_Str(outFileName, get_Str(keepOriginalPermission, undefined));
+
+            var item = getEntry(entry);
+            if (!item) {
+                throw new Error(Utils.Errors.NO_ENTRY);
+            }
+
+            var entryName = canonical(item.entryName);
+
+            var target = sanitize(targetPath, outFileName && !item.isDirectory ? outFileName : maintainEntryPath ? entryName : pth.basename(entryName));
+
+            if (item.isDirectory) {
+                var children = _zip.getEntryChildren(item);
+                children.forEach(function (child) {
+                    if (child.isDirectory) return;
+                    var content = child.getData();
+                    if (!content) {
+                        throw new Error(Utils.Errors.CANT_EXTRACT_FILE);
+                    }
+                    var name = canonical(child.entryName);
+                    var childName = sanitize(targetPath, maintainEntryPath ? name : pth.basename(name));
+                    // The reverse operation for attr depend on method addFile()
+                    const fileAttr = keepOriginalPermission ? child.header.fileAttr : undefined;
+                    filetools.writeFileTo(childName, content, overwrite, fileAttr);
+                });
+                return true;
+            }
+
+            var content = item.getData();
+            if (!content) throw new Error(Utils.Errors.CANT_EXTRACT_FILE);
+
+            if (filetools.fs.existsSync(target) && !overwrite) {
+                throw new Error(Utils.Errors.CANT_OVERRIDE);
+            }
+            // The reverse operation for attr depend on method addFile()
+            const fileAttr = keepOriginalPermission ? entry.header.fileAttr : undefined;
+            filetools.writeFileTo(target, content, overwrite, fileAttr);
+
+            return true;
+        },
+
+        /**
+         * Test the archive
+         *
+         */
+        test: function (pass) {
+            if (!_zip) {
+                return false;
+            }
+
+            for (var entry in _zip.entries) {
+                try {
+                    if (entry.isDirectory) {
+                        continue;
+                    }
+                    var content = _zip.entries[entry].getData(pass);
+                    if (!content) {
+                        return false;
+                    }
+                } catch (err) {
+                    return false;
+                }
+            }
+            return true;
+        },
+
+        /**
+         * Extracts the entire archive to the given location
+         *
+         * @param targetPath Target location
+         * @param overwrite If the file already exists at the target path, the file will be overwriten if this is true.
+         *                  Default is FALSE
+         * @param keepOriginalPermission The file will be set as the permission from the entry if this is true.
+         *                  Default is FALSE
+         */
+        extractAllTo: function (/**String*/ targetPath, /**Boolean*/ overwrite, /**Boolean*/ keepOriginalPermission, /*String, Buffer*/ pass) {
+            overwrite = get_Bool(overwrite, false);
+            pass = get_Str(keepOriginalPermission, pass);
+            keepOriginalPermission = get_Bool(keepOriginalPermission, false);
+            if (!_zip) {
+                throw new Error(Utils.Errors.NO_ZIP);
+            }
+            _zip.entries.forEach(function (entry) {
+                var entryName = sanitize(targetPath, canonical(entry.entryName.toString()));
+                if (entry.isDirectory) {
+                    filetools.makeDir(entryName);
+                    return;
+                }
+                var content = entry.getData(pass);
+                if (!content) {
+                    throw new Error(Utils.Errors.CANT_EXTRACT_FILE);
+                }
+                // The reverse operation for attr depend on method addFile()
+                const fileAttr = keepOriginalPermission ? entry.header.fileAttr : undefined;
+                filetools.writeFileTo(entryName, content, overwrite, fileAttr);
+                try {
+                    filetools.fs.utimesSync(entryName, entry.header.time, entry.header.time);
+                } catch (err) {
+                    throw new Error(Utils.Errors.CANT_EXTRACT_FILE);
+                }
+            });
+        },
+
+        /**
+         * Asynchronous extractAllTo
+         *
+         * @param targetPath Target location
+         * @param overwrite If the file already exists at the target path, the file will be overwriten if this is true.
+         *                  Default is FALSE
+         * @param keepOriginalPermission The file will be set as the permission from the entry if this is true.
+         *                  Default is FALSE
+         * @param callback The callback will be executed when all entries are extracted successfully or any error is thrown.
+         */
+        extractAllToAsync: function (/**String*/ targetPath, /**Boolean*/ overwrite, /**Boolean*/ keepOriginalPermission, /**Function*/ callback) {
+            overwrite = get_Bool(overwrite, false);
+            if (typeof keepOriginalPermission === "function" && !callback) callback = keepOriginalPermission;
+            keepOriginalPermission = get_Bool(keepOriginalPermission, false);
+            if (!callback) {
+                callback = function (err) {
+                    throw new Error(err);
+                };
+            }
+            if (!_zip) {
+                callback(new Error(Utils.Errors.NO_ZIP));
+                return;
+            }
+
+            targetPath = pth.resolve(targetPath);
+            // convert entryName to
+            const getPath = (entry) => sanitize(targetPath, pth.normalize(canonical(entry.entryName.toString())));
+            const getError = (msg, file) => new Error(msg + ': "' + file + '"');
+
+            // separate directories from files
+            const dirEntries = [];
+            const fileEntries = new Set();
+            _zip.entries.forEach((e) => {
+                if (e.isDirectory) {
+                    dirEntries.push(e);
+                } else {
+                    fileEntries.add(e);
+                }
+            });
+
+            // Create directory entries first synchronously
+            // this prevents race condition and assures folders are there before writing files
+            for (const entry of dirEntries) {
+                const dirPath = getPath(entry);
+                // The reverse operation for attr depend on method addFile()
+                const dirAttr = keepOriginalPermission ? entry.header.fileAttr : undefined;
+                try {
+                    filetools.makeDir(dirPath);
+                    if (dirAttr) filetools.fs.chmodSync(dirPath, dirAttr);
+                    // in unix timestamp will change if files are later added to folder, but still
+                    filetools.fs.utimesSync(dirPath, entry.header.time, entry.header.time);
+                } catch (er) {
+                    callback(getError("Unable to create folder", dirPath));
+                }
+            }
+
+            // callback wrapper, for some house keeping
+            const done = () => {
+                if (fileEntries.size === 0) {
+                    callback();
+                }
+            };
+
+            // Extract file entries asynchronously
+            for (const entry of fileEntries.values()) {
+                const entryName = pth.normalize(canonical(entry.entryName.toString()));
+                const filePath = sanitize(targetPath, entryName);
+                entry.getDataAsync(function (content, err_1) {
+                    if (err_1) {
+                        callback(new Error(err_1));
+                        return;
+                    }
+                    if (!content) {
+                        callback(new Error(Utils.Errors.CANT_EXTRACT_FILE));
+                    } else {
+                        // The reverse operation for attr depend on method addFile()
+                        const fileAttr = keepOriginalPermission ? entry.header.fileAttr : undefined;
+                        filetools.writeFileToAsync(filePath, content, overwrite, fileAttr, function (succ) {
+                            if (!succ) {
+                                callback(getError("Unable to write file", filePath));
+                                return;
+                            }
+                            filetools.fs.utimes(filePath, entry.header.time, entry.header.time, function (err_2) {
+                                if (err_2) {
+                                    callback(getError("Unable to set times", filePath));
+                                    return;
+                                }
+                                fileEntries.delete(entry);
+                                // call the callback if it was last entry
+                                done();
+                            });
+                        });
+                    }
+                });
+            }
+            // call the callback if fileEntries was empty
+            done();
+        },
+
+        /**
+         * Writes the newly created zip file to disk at the specified location or if a zip was opened and no ``targetFileName`` is provided, it will overwrite the opened zip
+         *
+         * @param targetFileName
+         * @param callback
+         */
+        writeZip: function (/**String*/ targetFileName, /**Function*/ callback) {
+            if (arguments.length === 1) {
+                if (typeof targetFileName === "function") {
+                    callback = targetFileName;
+                    targetFileName = "";
+                }
+            }
+
+            if (!targetFileName && opts.filename) {
+                targetFileName = opts.filename;
+            }
+            if (!targetFileName) return;
+
+            var zipData = _zip.compressToBuffer();
+            if (zipData) {
+                var ok = filetools.writeFileTo(targetFileName, zipData, true);
+                if (typeof callback === "function") callback(!ok ? new Error("failed") : null, "");
+            }
+        },
+
+        writeZipPromise: function (/**String*/ targetFileName, /* object */ props) {
+            const { overwrite, perm } = Object.assign({ overwrite: true }, props);
+
+            return new Promise((resolve, reject) => {
+                // find file name
+                if (!targetFileName && opts.filename) targetFileName = opts.filename;
+                if (!targetFileName) reject("ADM-ZIP: ZIP File Name Missing");
+
+                this.toBufferPromise().then((zipData) => {
+                    const ret = (done) => (done ? resolve(done) : reject("ADM-ZIP: Wasn't able to write zip file"));
+                    filetools.writeFileToAsync(targetFileName, zipData, overwrite, perm, ret);
+                }, reject);
+            });
+        },
+
+        toBufferPromise: function () {
+            return new Promise((resolve, reject) => {
+                _zip.toAsyncBuffer(resolve, reject);
+            });
+        },
+
+        /**
+         * Returns the content of the entire zip file as a Buffer object
+         *
+         * @return Buffer
+         */
+        toBuffer: function (/**Function=*/ onSuccess, /**Function=*/ onFail, /**Function=*/ onItemStart, /**Function=*/ onItemEnd) {
+            this.valueOf = 2;
+            if (typeof onSuccess === "function") {
+                _zip.toAsyncBuffer(onSuccess, onFail, onItemStart, onItemEnd);
+                return null;
+            }
+            return _zip.compressToBuffer();
+        }
+    };
+};
+
+
+/***/ }),
+
+/***/ 9032:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+var Utils = __nccwpck_require__(35182),
+    Constants = Utils.Constants;
+
+/* The central directory file header */
+module.exports = function () {
+    var _verMade = 20, // v2.0
+        _version = 10, // v1.0
+        _flags = 0,
+        _method = 0,
+        _time = 0,
+        _crc = 0,
+        _compressedSize = 0,
+        _size = 0,
+        _fnameLen = 0,
+        _extraLen = 0,
+        _comLen = 0,
+        _diskStart = 0,
+        _inattr = 0,
+        _attr = 0,
+        _offset = 0;
+
+    _verMade |= Utils.isWin ? 0x0a00 : 0x0300;
+
+    // Set EFS flag since filename and comment fields are all by default encoded using UTF-8.
+    // Without it file names may be corrupted for other apps when file names use unicode chars
+    _flags |= Constants.FLG_EFS;
+
+    var _dataHeader = {};
+
+    function setTime(val) {
+        val = new Date(val);
+        _time =
+            (((val.getFullYear() - 1980) & 0x7f) << 25) | // b09-16 years from 1980
+            ((val.getMonth() + 1) << 21) | // b05-08 month
+            (val.getDate() << 16) | // b00-04 hour
+            // 2 bytes time
+            (val.getHours() << 11) | // b11-15 hour
+            (val.getMinutes() << 5) | // b05-10 minute
+            (val.getSeconds() >> 1); // b00-04 seconds divided by 2
+    }
+
+    setTime(+new Date());
+
+    return {
+        get made() {
+            return _verMade;
+        },
+        set made(val) {
+            _verMade = val;
+        },
+
+        get version() {
+            return _version;
+        },
+        set version(val) {
+            _version = val;
+        },
+
+        get flags() {
+            return _flags;
+        },
+        set flags(val) {
+            _flags = val;
+        },
+
+        get method() {
+            return _method;
+        },
+        set method(val) {
+            switch (val) {
+                case Constants.STORED:
+                    this.version = 10;
+                case Constants.DEFLATED:
+                default:
+                    this.version = 20;
+            }
+            _method = val;
+        },
+
+        get time() {
+            return new Date(((_time >> 25) & 0x7f) + 1980, ((_time >> 21) & 0x0f) - 1, (_time >> 16) & 0x1f, (_time >> 11) & 0x1f, (_time >> 5) & 0x3f, (_time & 0x1f) << 1);
+        },
+        set time(val) {
+            setTime(val);
+        },
+
+        get crc() {
+            return _crc;
+        },
+        set crc(val) {
+            _crc = Math.max(0, val) >>> 0;
+        },
+
+        get compressedSize() {
+            return _compressedSize;
+        },
+        set compressedSize(val) {
+            _compressedSize = Math.max(0, val) >>> 0;
+        },
+
+        get size() {
+            return _size;
+        },
+        set size(val) {
+            _size = Math.max(0, val) >>> 0;
+        },
+
+        get fileNameLength() {
+            return _fnameLen;
+        },
+        set fileNameLength(val) {
+            _fnameLen = val;
+        },
+
+        get extraLength() {
+            return _extraLen;
+        },
+        set extraLength(val) {
+            _extraLen = val;
+        },
+
+        get commentLength() {
+            return _comLen;
+        },
+        set commentLength(val) {
+            _comLen = val;
+        },
+
+        get diskNumStart() {
+            return _diskStart;
+        },
+        set diskNumStart(val) {
+            _diskStart = Math.max(0, val) >>> 0;
+        },
+
+        get inAttr() {
+            return _inattr;
+        },
+        set inAttr(val) {
+            _inattr = Math.max(0, val) >>> 0;
+        },
+
+        get attr() {
+            return _attr;
+        },
+        set attr(val) {
+            _attr = Math.max(0, val) >>> 0;
+        },
+
+        // get Unix file permissions
+        get fileAttr() {
+            return _attr ? (((_attr >>> 0) | 0) >> 16) & 0xfff : 0;
+        },
+
+        get offset() {
+            return _offset;
+        },
+        set offset(val) {
+            _offset = Math.max(0, val) >>> 0;
+        },
+
+        get encripted() {
+            return (_flags & 1) === 1;
+        },
+
+        get entryHeaderSize() {
+            return Constants.CENHDR + _fnameLen + _extraLen + _comLen;
+        },
+
+        get realDataOffset() {
+            return _offset + Constants.LOCHDR + _dataHeader.fnameLen + _dataHeader.extraLen;
+        },
+
+        get dataHeader() {
+            return _dataHeader;
+        },
+
+        loadDataHeaderFromBinary: function (/*Buffer*/ input) {
+            var data = input.slice(_offset, _offset + Constants.LOCHDR);
+            // 30 bytes and should start with "PK\003\004"
+            if (data.readUInt32LE(0) !== Constants.LOCSIG) {
+                throw new Error(Utils.Errors.INVALID_LOC);
+            }
+            _dataHeader = {
+                // version needed to extract
+                version: data.readUInt16LE(Constants.LOCVER),
+                // general purpose bit flag
+                flags: data.readUInt16LE(Constants.LOCFLG),
+                // compression method
+                method: data.readUInt16LE(Constants.LOCHOW),
+                // modification time (2 bytes time, 2 bytes date)
+                time: data.readUInt32LE(Constants.LOCTIM),
+                // uncompressed file crc-32 value
+                crc: data.readUInt32LE(Constants.LOCCRC),
+                // compressed size
+                compressedSize: data.readUInt32LE(Constants.LOCSIZ),
+                // uncompressed size
+                size: data.readUInt32LE(Constants.LOCLEN),
+                // filename length
+                fnameLen: data.readUInt16LE(Constants.LOCNAM),
+                // extra field length
+                extraLen: data.readUInt16LE(Constants.LOCEXT)
+            };
+        },
+
+        loadFromBinary: function (/*Buffer*/ data) {
+            // data should be 46 bytes and start with "PK 01 02"
+            if (data.length !== Constants.CENHDR || data.readUInt32LE(0) !== Constants.CENSIG) {
+                throw new Error(Utils.Errors.INVALID_CEN);
+            }
+            // version made by
+            _verMade = data.readUInt16LE(Constants.CENVEM);
+            // version needed to extract
+            _version = data.readUInt16LE(Constants.CENVER);
+            // encrypt, decrypt flags
+            _flags = data.readUInt16LE(Constants.CENFLG);
+            // compression method
+            _method = data.readUInt16LE(Constants.CENHOW);
+            // modification time (2 bytes time, 2 bytes date)
+            _time = data.readUInt32LE(Constants.CENTIM);
+            // uncompressed file crc-32 value
+            _crc = data.readUInt32LE(Constants.CENCRC);
+            // compressed size
+            _compressedSize = data.readUInt32LE(Constants.CENSIZ);
+            // uncompressed size
+            _size = data.readUInt32LE(Constants.CENLEN);
+            // filename length
+            _fnameLen = data.readUInt16LE(Constants.CENNAM);
+            // extra field length
+            _extraLen = data.readUInt16LE(Constants.CENEXT);
+            // file comment length
+            _comLen = data.readUInt16LE(Constants.CENCOM);
+            // volume number start
+            _diskStart = data.readUInt16LE(Constants.CENDSK);
+            // internal file attributes
+            _inattr = data.readUInt16LE(Constants.CENATT);
+            // external file attributes
+            _attr = data.readUInt32LE(Constants.CENATX);
+            // LOC header offset
+            _offset = data.readUInt32LE(Constants.CENOFF);
+        },
+
+        dataHeaderToBinary: function () {
+            // LOC header size (30 bytes)
+            var data = Buffer.alloc(Constants.LOCHDR);
+            // "PK\003\004"
+            data.writeUInt32LE(Constants.LOCSIG, 0);
+            // version needed to extract
+            data.writeUInt16LE(_version, Constants.LOCVER);
+            // general purpose bit flag
+            data.writeUInt16LE(_flags, Constants.LOCFLG);
+            // compression method
+            data.writeUInt16LE(_method, Constants.LOCHOW);
+            // modification time (2 bytes time, 2 bytes date)
+            data.writeUInt32LE(_time, Constants.LOCTIM);
+            // uncompressed file crc-32 value
+            data.writeUInt32LE(_crc, Constants.LOCCRC);
+            // compressed size
+            data.writeUInt32LE(_compressedSize, Constants.LOCSIZ);
+            // uncompressed size
+            data.writeUInt32LE(_size, Constants.LOCLEN);
+            // filename length
+            data.writeUInt16LE(_fnameLen, Constants.LOCNAM);
+            // extra field length
+            data.writeUInt16LE(_extraLen, Constants.LOCEXT);
+            return data;
+        },
+
+        entryHeaderToBinary: function () {
+            // CEN header size (46 bytes)
+            var data = Buffer.alloc(Constants.CENHDR + _fnameLen + _extraLen + _comLen);
+            // "PK\001\002"
+            data.writeUInt32LE(Constants.CENSIG, 0);
+            // version made by
+            data.writeUInt16LE(_verMade, Constants.CENVEM);
+            // version needed to extract
+            data.writeUInt16LE(_version, Constants.CENVER);
+            // encrypt, decrypt flags
+            data.writeUInt16LE(_flags, Constants.CENFLG);
+            // compression method
+            data.writeUInt16LE(_method, Constants.CENHOW);
+            // modification time (2 bytes time, 2 bytes date)
+            data.writeUInt32LE(_time, Constants.CENTIM);
+            // uncompressed file crc-32 value
+            data.writeUInt32LE(_crc, Constants.CENCRC);
+            // compressed size
+            data.writeUInt32LE(_compressedSize, Constants.CENSIZ);
+            // uncompressed size
+            data.writeUInt32LE(_size, Constants.CENLEN);
+            // filename length
+            data.writeUInt16LE(_fnameLen, Constants.CENNAM);
+            // extra field length
+            data.writeUInt16LE(_extraLen, Constants.CENEXT);
+            // file comment length
+            data.writeUInt16LE(_comLen, Constants.CENCOM);
+            // volume number start
+            data.writeUInt16LE(_diskStart, Constants.CENDSK);
+            // internal file attributes
+            data.writeUInt16LE(_inattr, Constants.CENATT);
+            // external file attributes
+            data.writeUInt32LE(_attr, Constants.CENATX);
+            // LOC header offset
+            data.writeUInt32LE(_offset, Constants.CENOFF);
+            // fill all with
+            data.fill(0x00, Constants.CENHDR);
+            return data;
+        },
+
+        toJSON: function () {
+            const bytes = function (nr) {
+                return nr + " bytes";
+            };
+
+            return {
+                made: _verMade,
+                version: _version,
+                flags: _flags,
+                method: Utils.methodToString(_method),
+                time: this.time,
+                crc: "0x" + _crc.toString(16).toUpperCase(),
+                compressedSize: bytes(_compressedSize),
+                size: bytes(_size),
+                fileNameLength: bytes(_fnameLen),
+                extraLength: bytes(_extraLen),
+                commentLength: bytes(_comLen),
+                diskNumStart: _diskStart,
+                inAttr: _inattr,
+                attr: _attr,
+                offset: _offset,
+                entryHeaderSize: bytes(Constants.CENHDR + _fnameLen + _extraLen + _comLen)
+            };
+        },
+
+        toString: function () {
+            return JSON.stringify(this.toJSON(), null, "\t");
+        }
+    };
+};
+
+
+/***/ }),
+
+/***/ 14958:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+exports.EntryHeader = __nccwpck_require__(9032);
+exports.MainHeader = __nccwpck_require__(4408);
+
+
+/***/ }),
+
+/***/ 4408:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+var Utils = __nccwpck_require__(35182),
+    Constants = Utils.Constants;
+
+/* The entries in the end of central directory */
+module.exports = function () {
+    var _volumeEntries = 0,
+        _totalEntries = 0,
+        _size = 0,
+        _offset = 0,
+        _commentLength = 0;
+
+    return {
+        get diskEntries() {
+            return _volumeEntries;
+        },
+        set diskEntries(/*Number*/ val) {
+            _volumeEntries = _totalEntries = val;
+        },
+
+        get totalEntries() {
+            return _totalEntries;
+        },
+        set totalEntries(/*Number*/ val) {
+            _totalEntries = _volumeEntries = val;
+        },
+
+        get size() {
+            return _size;
+        },
+        set size(/*Number*/ val) {
+            _size = val;
+        },
+
+        get offset() {
+            return _offset;
+        },
+        set offset(/*Number*/ val) {
+            _offset = val;
+        },
+
+        get commentLength() {
+            return _commentLength;
+        },
+        set commentLength(/*Number*/ val) {
+            _commentLength = val;
+        },
+
+        get mainHeaderSize() {
+            return Constants.ENDHDR + _commentLength;
+        },
+
+        loadFromBinary: function (/*Buffer*/ data) {
+            // data should be 22 bytes and start with "PK 05 06"
+            // or be 56+ bytes and start with "PK 06 06" for Zip64
+            if (
+                (data.length !== Constants.ENDHDR || data.readUInt32LE(0) !== Constants.ENDSIG) &&
+                (data.length < Constants.ZIP64HDR || data.readUInt32LE(0) !== Constants.ZIP64SIG)
+            ) {
+                throw new Error(Utils.Errors.INVALID_END);
+            }
+
+            if (data.readUInt32LE(0) === Constants.ENDSIG) {
+                // number of entries on this volume
+                _volumeEntries = data.readUInt16LE(Constants.ENDSUB);
+                // total number of entries
+                _totalEntries = data.readUInt16LE(Constants.ENDTOT);
+                // central directory size in bytes
+                _size = data.readUInt32LE(Constants.ENDSIZ);
+                // offset of first CEN header
+                _offset = data.readUInt32LE(Constants.ENDOFF);
+                // zip file comment length
+                _commentLength = data.readUInt16LE(Constants.ENDCOM);
+            } else {
+                // number of entries on this volume
+                _volumeEntries = Utils.readBigUInt64LE(data, Constants.ZIP64SUB);
+                // total number of entries
+                _totalEntries = Utils.readBigUInt64LE(data, Constants.ZIP64TOT);
+                // central directory size in bytes
+                _size = Utils.readBigUInt64LE(data, Constants.ZIP64SIZE);
+                // offset of first CEN header
+                _offset = Utils.readBigUInt64LE(data, Constants.ZIP64OFF);
+
+                _commentLength = 0;
+            }
+        },
+
+        toBinary: function () {
+            var b = Buffer.alloc(Constants.ENDHDR + _commentLength);
+            // "PK 05 06" signature
+            b.writeUInt32LE(Constants.ENDSIG, 0);
+            b.writeUInt32LE(0, 4);
+            // number of entries on this volume
+            b.writeUInt16LE(_volumeEntries, Constants.ENDSUB);
+            // total number of entries
+            b.writeUInt16LE(_totalEntries, Constants.ENDTOT);
+            // central directory size in bytes
+            b.writeUInt32LE(_size, Constants.ENDSIZ);
+            // offset of first CEN header
+            b.writeUInt32LE(_offset, Constants.ENDOFF);
+            // zip file comment length
+            b.writeUInt16LE(_commentLength, Constants.ENDCOM);
+            // fill comment memory with spaces so no garbage is left there
+            b.fill(" ", Constants.ENDHDR);
+
+            return b;
+        },
+
+        toJSON: function () {
+            // creates 0x0000 style output
+            const offset = function (nr, len) {
+                let offs = nr.toString(16).toUpperCase();
+                while (offs.length < len) offs = "0" + offs;
+                return "0x" + offs;
+            };
+
+            return {
+                diskEntries: _volumeEntries,
+                totalEntries: _totalEntries,
+                size: _size + " bytes",
+                offset: offset(_offset, 4),
+                commentLength: _commentLength
+            };
+        },
+
+        toString: function () {
+            return JSON.stringify(this.toJSON(), null, "\t");
+        }
+    };
+};
+ // Misspelled 
+
+/***/ }),
+
+/***/ 37686:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+module.exports = function (/*Buffer*/ inbuf) {
+    var zlib = __nccwpck_require__(59796);
+
+    var opts = { chunkSize: (parseInt(inbuf.length / 1024) + 1) * 1024 };
+
+    return {
+        deflate: function () {
+            return zlib.deflateRawSync(inbuf, opts);
+        },
+
+        deflateAsync: function (/*Function*/ callback) {
+            var tmp = zlib.createDeflateRaw(opts),
+                parts = [],
+                total = 0;
+            tmp.on("data", function (data) {
+                parts.push(data);
+                total += data.length;
+            });
+            tmp.on("end", function () {
+                var buf = Buffer.alloc(total),
+                    written = 0;
+                buf.fill(0);
+                for (var i = 0; i < parts.length; i++) {
+                    var part = parts[i];
+                    part.copy(buf, written);
+                    written += part.length;
+                }
+                callback && callback(buf);
+            });
+            tmp.end(inbuf);
+        }
+    };
+};
+
+
+/***/ }),
+
+/***/ 93928:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+exports.Deflater = __nccwpck_require__(37686);
+exports.Inflater = __nccwpck_require__(32153);
+exports.ZipCrypto = __nccwpck_require__(23228);
+
+
+/***/ }),
+
+/***/ 32153:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+module.exports = function (/*Buffer*/ inbuf) {
+    var zlib = __nccwpck_require__(59796);
+
+    return {
+        inflate: function () {
+            return zlib.inflateRawSync(inbuf);
+        },
+
+        inflateAsync: function (/*Function*/ callback) {
+            var tmp = zlib.createInflateRaw(),
+                parts = [],
+                total = 0;
+            tmp.on("data", function (data) {
+                parts.push(data);
+                total += data.length;
+            });
+            tmp.on("end", function () {
+                var buf = Buffer.alloc(total),
+                    written = 0;
+                buf.fill(0);
+                for (var i = 0; i < parts.length; i++) {
+                    var part = parts[i];
+                    part.copy(buf, written);
+                    written += part.length;
+                }
+                callback && callback(buf);
+            });
+            tmp.end(inbuf);
+        }
+    };
+};
+
+
+/***/ }),
+
+/***/ 23228:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+
+
+// node crypt, we use it for generate salt
+// eslint-disable-next-line node/no-unsupported-features/node-builtins
+const { randomFillSync } = __nccwpck_require__(6113);
+
+// generate CRC32 lookup table
+const crctable = new Uint32Array(256).map((t, crc) => {
+    for (let j = 0; j < 8; j++) {
+        if (0 !== (crc & 1)) {
+            crc = (crc >>> 1) ^ 0xedb88320;
+        } else {
+            crc >>>= 1;
+        }
+    }
+    return crc >>> 0;
+});
+
+// C-style uInt32 Multiply (discards higher bits, when JS multiply discards lower bits)
+const uMul = (a, b) => Math.imul(a, b) >>> 0;
+
+// crc32 byte single update (actually same function is part of utils.crc32 function :) )
+const crc32update = (pCrc32, bval) => {
+    return crctable[(pCrc32 ^ bval) & 0xff] ^ (pCrc32 >>> 8);
+};
+
+// function for generating salt for encrytion header
+const genSalt = () => {
+    if ("function" === typeof randomFillSync) {
+        return randomFillSync(Buffer.alloc(12));
+    } else {
+        // fallback if function is not defined
+        return genSalt.node();
+    }
+};
+
+// salt generation with node random function (mainly as fallback)
+genSalt.node = () => {
+    const salt = Buffer.alloc(12);
+    const len = salt.length;
+    for (let i = 0; i < len; i++) salt[i] = (Math.random() * 256) & 0xff;
+    return salt;
+};
+
+// general config
+const config = {
+    genSalt
+};
+
+// Class Initkeys handles same basic ops with keys
+function Initkeys(pw) {
+    const pass = Buffer.isBuffer(pw) ? pw : Buffer.from(pw);
+    this.keys = new Uint32Array([0x12345678, 0x23456789, 0x34567890]);
+    for (let i = 0; i < pass.length; i++) {
+        this.updateKeys(pass[i]);
+    }
+}
+
+Initkeys.prototype.updateKeys = function (byteValue) {
+    const keys = this.keys;
+    keys[0] = crc32update(keys[0], byteValue);
+    keys[1] += keys[0] & 0xff;
+    keys[1] = uMul(keys[1], 134775813) + 1;
+    keys[2] = crc32update(keys[2], keys[1] >>> 24);
+    return byteValue;
+};
+
+Initkeys.prototype.next = function () {
+    const k = (this.keys[2] | 2) >>> 0; // key
+    return (uMul(k, k ^ 1) >> 8) & 0xff; // decode
+};
+
+function make_decrypter(/*Buffer*/ pwd) {
+    // 1. Stage initialize key
+    const keys = new Initkeys(pwd);
+
+    // return decrypter function
+    return function (/*Buffer*/ data) {
+        // result - we create new Buffer for results
+        const result = Buffer.alloc(data.length);
+        let pos = 0;
+        // process input data
+        for (let c of data) {
+            //c ^= keys.next();
+            //result[pos++] = c; // decode & Save Value
+            result[pos++] = keys.updateKeys(c ^ keys.next()); // update keys with decoded byte
+        }
+        return result;
+    };
+}
+
+function make_encrypter(/*Buffer*/ pwd) {
+    // 1. Stage initialize key
+    const keys = new Initkeys(pwd);
+
+    // return encrypting function, result and pos is here so we dont have to merge buffers later
+    return function (/*Buffer*/ data, /*Buffer*/ result, /* Number */ pos = 0) {
+        // result - we create new Buffer for results
+        if (!result) result = Buffer.alloc(data.length);
+        // process input data
+        for (let c of data) {
+            const k = keys.next(); // save key byte
+            result[pos++] = c ^ k; // save val
+            keys.updateKeys(c); // update keys with decoded byte
+        }
+        return result;
+    };
+}
+
+function decrypt(/*Buffer*/ data, /*Object*/ header, /*String, Buffer*/ pwd) {
+    if (!data || !Buffer.isBuffer(data) || data.length < 12) {
+        return Buffer.alloc(0);
+    }
+
+    // 1. We Initialize and generate decrypting function
+    const decrypter = make_decrypter(pwd);
+
+    // 2. decrypt salt what is always 12 bytes and is a part of file content
+    const salt = decrypter(data.slice(0, 12));
+
+    // 3. does password meet expectations
+    if (salt[11] !== header.crc >>> 24) {
+        throw "ADM-ZIP: Wrong Password";
+    }
+
+    // 4. decode content
+    return decrypter(data.slice(12));
+}
+
+// lets add way to populate salt, NOT RECOMMENDED for production but maybe useful for testing general functionality
+function _salter(data) {
+    if (Buffer.isBuffer(data) && data.length >= 12) {
+        // be aware - currently salting buffer data is modified
+        config.genSalt = function () {
+            return data.slice(0, 12);
+        };
+    } else if (data === "node") {
+        // test salt generation with node random function
+        config.genSalt = genSalt.node;
+    } else {
+        // if value is not acceptable config gets reset.
+        config.genSalt = genSalt;
+    }
+}
+
+function encrypt(/*Buffer*/ data, /*Object*/ header, /*String, Buffer*/ pwd, /*Boolean*/ oldlike = false) {
+    // 1. test data if data is not Buffer we make buffer from it
+    if (data == null) data = Buffer.alloc(0);
+    // if data is not buffer be make buffer from it
+    if (!Buffer.isBuffer(data)) data = Buffer.from(data.toString());
+
+    // 2. We Initialize and generate encrypting function
+    const encrypter = make_encrypter(pwd);
+
+    // 3. generate salt (12-bytes of random data)
+    const salt = config.genSalt();
+    salt[11] = (header.crc >>> 24) & 0xff;
+
+    // old implementations (before PKZip 2.04g) used two byte check
+    if (oldlike) salt[10] = (header.crc >>> 16) & 0xff;
+
+    // 4. create output
+    const result = Buffer.alloc(data.length + 12);
+    encrypter(salt, result);
+
+    // finally encode content
+    return encrypter(data, result, 12);
+}
+
+module.exports = { decrypt, encrypt, _salter };
+
+
+/***/ }),
+
+/***/ 14522:
+/***/ ((module) => {
+
+module.exports = {
+    /* The local file header */
+    LOCHDR           : 30, // LOC header size
+    LOCSIG           : 0x04034b50, // "PK\003\004"
+    LOCVER           : 4,	// version needed to extract
+    LOCFLG           : 6, // general purpose bit flag
+    LOCHOW           : 8, // compression method
+    LOCTIM           : 10, // modification time (2 bytes time, 2 bytes date)
+    LOCCRC           : 14, // uncompressed file crc-32 value
+    LOCSIZ           : 18, // compressed size
+    LOCLEN           : 22, // uncompressed size
+    LOCNAM           : 26, // filename length
+    LOCEXT           : 28, // extra field length
+
+    /* The Data descriptor */
+    EXTSIG           : 0x08074b50, // "PK\007\008"
+    EXTHDR           : 16, // EXT header size
+    EXTCRC           : 4, // uncompressed file crc-32 value
+    EXTSIZ           : 8, // compressed size
+    EXTLEN           : 12, // uncompressed size
+
+    /* The central directory file header */
+    CENHDR           : 46, // CEN header size
+    CENSIG           : 0x02014b50, // "PK\001\002"
+    CENVEM           : 4, // version made by
+    CENVER           : 6, // version needed to extract
+    CENFLG           : 8, // encrypt, decrypt flags
+    CENHOW           : 10, // compression method
+    CENTIM           : 12, // modification time (2 bytes time, 2 bytes date)
+    CENCRC           : 16, // uncompressed file crc-32 value
+    CENSIZ           : 20, // compressed size
+    CENLEN           : 24, // uncompressed size
+    CENNAM           : 28, // filename length
+    CENEXT           : 30, // extra field length
+    CENCOM           : 32, // file comment length
+    CENDSK           : 34, // volume number start
+    CENATT           : 36, // internal file attributes
+    CENATX           : 38, // external file attributes (host system dependent)
+    CENOFF           : 42, // LOC header offset
+
+    /* The entries in the end of central directory */
+    ENDHDR           : 22, // END header size
+    ENDSIG           : 0x06054b50, // "PK\005\006"
+    ENDSUB           : 8, // number of entries on this disk
+    ENDTOT           : 10, // total number of entries
+    ENDSIZ           : 12, // central directory size in bytes
+    ENDOFF           : 16, // offset of first CEN header
+    ENDCOM           : 20, // zip file comment length
+
+    END64HDR         : 20, // zip64 END header size
+    END64SIG         : 0x07064b50, // zip64 Locator signature, "PK\006\007"
+    END64START       : 4, // number of the disk with the start of the zip64
+    END64OFF         : 8, // relative offset of the zip64 end of central directory
+    END64NUMDISKS    : 16, // total number of disks
+
+    ZIP64SIG         : 0x06064b50, // zip64 signature, "PK\006\006"
+    ZIP64HDR         : 56, // zip64 record minimum size
+    ZIP64LEAD        : 12, // leading bytes at the start of the record, not counted by the value stored in ZIP64SIZE
+    ZIP64SIZE        : 4, // zip64 size of the central directory record
+    ZIP64VEM         : 12, // zip64 version made by
+    ZIP64VER         : 14, // zip64 version needed to extract
+    ZIP64DSK         : 16, // zip64 number of this disk
+    ZIP64DSKDIR      : 20, // number of the disk with the start of the record directory
+    ZIP64SUB         : 24, // number of entries on this disk
+    ZIP64TOT         : 32, // total number of entries
+    ZIP64SIZB        : 40, // zip64 central directory size in bytes
+    ZIP64OFF         : 48, // offset of start of central directory with respect to the starting disk number
+    ZIP64EXTRA       : 56, // extensible data sector
+
+    /* Compression methods */
+    STORED           : 0, // no compression
+    SHRUNK           : 1, // shrunk
+    REDUCED1         : 2, // reduced with compression factor 1
+    REDUCED2         : 3, // reduced with compression factor 2
+    REDUCED3         : 4, // reduced with compression factor 3
+    REDUCED4         : 5, // reduced with compression factor 4
+    IMPLODED         : 6, // imploded
+    // 7 reserved for Tokenizing compression algorithm
+    DEFLATED         : 8, // deflated
+    ENHANCED_DEFLATED: 9, // enhanced deflated
+    PKWARE           : 10,// PKWare DCL imploded
+    // 11 reserved by PKWARE
+    BZIP2            : 12, //  compressed using BZIP2
+    // 13 reserved by PKWARE
+    LZMA             : 14, // LZMA
+    // 15-17 reserved by PKWARE
+    IBM_TERSE        : 18, // compressed using IBM TERSE
+    IBM_LZ77         : 19, // IBM LZ77 z
+    AES_ENCRYPT      : 99, // WinZIP AES encryption method
+
+    /* General purpose bit flag */
+    // values can obtained with expression 2**bitnr
+    FLG_ENC          : 1,    // Bit 0: encrypted file
+    FLG_COMP1        : 2,    // Bit 1, compression option
+    FLG_COMP2        : 4,    // Bit 2, compression option
+    FLG_DESC         : 8,    // Bit 3, data descriptor
+    FLG_ENH          : 16,   // Bit 4, enhanced deflating
+    FLG_PATCH        : 32,   // Bit 5, indicates that the file is compressed patched data.
+    FLG_STR          : 64,   // Bit 6, strong encryption (patented)
+                             // Bits 7-10: Currently unused.
+    FLG_EFS          : 2048, // Bit 11: Language encoding flag (EFS)
+                             // Bit 12: Reserved by PKWARE for enhanced compression.
+                             // Bit 13: encrypted the Central Directory (patented).
+                             // Bits 14-15: Reserved by PKWARE.
+    FLG_MSK          : 4096, // mask header values
+
+    /* Load type */
+    FILE             : 2,
+    BUFFER           : 1,
+    NONE             : 0,
+
+    /* 4.5 Extensible data fields */
+    EF_ID            : 0,
+    EF_SIZE          : 2,
+
+    /* Header IDs */
+    ID_ZIP64         : 0x0001,
+    ID_AVINFO        : 0x0007,
+    ID_PFS           : 0x0008,
+    ID_OS2           : 0x0009,
+    ID_NTFS          : 0x000a,
+    ID_OPENVMS       : 0x000c,
+    ID_UNIX          : 0x000d,
+    ID_FORK          : 0x000e,
+    ID_PATCH         : 0x000f,
+    ID_X509_PKCS7    : 0x0014,
+    ID_X509_CERTID_F : 0x0015,
+    ID_X509_CERTID_C : 0x0016,
+    ID_STRONGENC     : 0x0017,
+    ID_RECORD_MGT    : 0x0018,
+    ID_X509_PKCS7_RL : 0x0019,
+    ID_IBM1          : 0x0065,
+    ID_IBM2          : 0x0066,
+    ID_POSZIP        : 0x4690,
+
+    EF_ZIP64_OR_32   : 0xffffffff,
+    EF_ZIP64_OR_16   : 0xffff,
+    EF_ZIP64_SUNCOMP : 0,
+    EF_ZIP64_SCOMP   : 8,
+    EF_ZIP64_RHO     : 16,
+    EF_ZIP64_DSN     : 24
+};
+
+
+/***/ }),
+
+/***/ 31255:
+/***/ ((module) => {
+
+module.exports = {
+    /* Header error messages */
+    INVALID_LOC: "Invalid LOC header (bad signature)",
+    INVALID_CEN: "Invalid CEN header (bad signature)",
+    INVALID_END: "Invalid END header (bad signature)",
+
+    /* ZipEntry error messages*/
+    NO_DATA: "Nothing to decompress",
+    BAD_CRC: "CRC32 checksum failed",
+    FILE_IN_THE_WAY: "There is a file in the way: %s",
+    UNKNOWN_METHOD: "Invalid/unsupported compression method",
+
+    /* Inflater error messages */
+    AVAIL_DATA: "inflate::Available inflate data did not terminate",
+    INVALID_DISTANCE: "inflate::Invalid literal/length or distance code in fixed or dynamic block",
+    TO_MANY_CODES: "inflate::Dynamic block code description: too many length or distance codes",
+    INVALID_REPEAT_LEN: "inflate::Dynamic block code description: repeat more than specified lengths",
+    INVALID_REPEAT_FIRST: "inflate::Dynamic block code description: repeat lengths with no first length",
+    INCOMPLETE_CODES: "inflate::Dynamic block code description: code lengths codes incomplete",
+    INVALID_DYN_DISTANCE: "inflate::Dynamic block code description: invalid distance code lengths",
+    INVALID_CODES_LEN: "inflate::Dynamic block code description: invalid literal/length code lengths",
+    INVALID_STORE_BLOCK: "inflate::Stored block length did not match one's complement",
+    INVALID_BLOCK_TYPE: "inflate::Invalid block type (type == 3)",
+
+    /* ADM-ZIP error messages */
+    CANT_EXTRACT_FILE: "Could not extract the file",
+    CANT_OVERRIDE: "Target file already exists",
+    NO_ZIP: "No zip file was loaded",
+    NO_ENTRY: "Entry doesn't exist",
+    DIRECTORY_CONTENT_ERROR: "A directory cannot have content",
+    FILE_NOT_FOUND: "File not found: %s",
+    NOT_IMPLEMENTED: "Not implemented",
+    INVALID_FILENAME: "Invalid filename",
+    INVALID_FORMAT: "Invalid or unsupported zip format. No END header found"
+};
+
+
+/***/ }),
+
+/***/ 58321:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const fs = (__nccwpck_require__(12895).require)();
+const pth = __nccwpck_require__(71017);
+
+fs.existsSync = fs.existsSync || pth.existsSync;
+
+module.exports = function (/*String*/ path) {
+    var _path = path || "",
+        _obj = newAttr(),
+        _stat = null;
+
+    function newAttr() {
+        return {
+            directory: false,
+            readonly: false,
+            hidden: false,
+            executable: false,
+            mtime: 0,
+            atime: 0
+        };
+    }
+
+    if (_path && fs.existsSync(_path)) {
+        _stat = fs.statSync(_path);
+        _obj.directory = _stat.isDirectory();
+        _obj.mtime = _stat.mtime;
+        _obj.atime = _stat.atime;
+        _obj.executable = (0o111 & _stat.mode) !== 0; // file is executable who ever har right not just owner
+        _obj.readonly = (0o200 & _stat.mode) === 0; // readonly if owner has no write right
+        _obj.hidden = pth.basename(_path)[0] === ".";
+    } else {
+        console.warn("Invalid path: " + _path);
+    }
+
+    return {
+        get directory() {
+            return _obj.directory;
+        },
+
+        get readOnly() {
+            return _obj.readonly;
+        },
+
+        get hidden() {
+            return _obj.hidden;
+        },
+
+        get mtime() {
+            return _obj.mtime;
+        },
+
+        get atime() {
+            return _obj.atime;
+        },
+
+        get executable() {
+            return _obj.executable;
+        },
+
+        decodeAttributes: function () {},
+
+        encodeAttributes: function () {},
+
+        toJSON: function () {
+            return {
+                path: _path,
+                isDirectory: _obj.directory,
+                isReadOnly: _obj.readonly,
+                isHidden: _obj.hidden,
+                isExecutable: _obj.executable,
+                mTime: _obj.mtime,
+                aTime: _obj.atime
+            };
+        },
+
+        toString: function () {
+            return JSON.stringify(this.toJSON(), null, "\t");
+        }
+    };
+};
+
+
+/***/ }),
+
+/***/ 12895:
+/***/ ((__unused_webpack_module, exports, __nccwpck_require__) => {
+
+exports.require = function () {
+    if (typeof process === "object" && process.versions && process.versions["electron"]) {
+        try {
+            const originalFs = __nccwpck_require__(72941);
+            if (Object.keys(originalFs).length > 0) {
+                return originalFs;
+            }
+        } catch (e) {}
+    }
+    return __nccwpck_require__(57147);
+};
+
+
+/***/ }),
+
+/***/ 35182:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+module.exports = __nccwpck_require__(1291);
+module.exports.Constants = __nccwpck_require__(14522);
+module.exports.Errors = __nccwpck_require__(31255);
+module.exports.FileAttr = __nccwpck_require__(58321);
+
+
+/***/ }),
+
+/***/ 1291:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const fsystem = (__nccwpck_require__(12895).require)();
+const pth = __nccwpck_require__(71017);
+const Constants = __nccwpck_require__(14522);
+const Errors = __nccwpck_require__(31255);
+const isWin = typeof process === "object" && "win32" === process.platform;
+
+const is_Obj = (obj) => obj && typeof obj === "object";
+
+// generate CRC32 lookup table
+const crcTable = new Uint32Array(256).map((t, c) => {
+    for (let k = 0; k < 8; k++) {
+        if ((c & 1) !== 0) {
+            c = 0xedb88320 ^ (c >>> 1);
+        } else {
+            c >>>= 1;
+        }
+    }
+    return c >>> 0;
+});
+
+// UTILS functions
+
+function Utils(opts) {
+    this.sep = pth.sep;
+    this.fs = fsystem;
+
+    if (is_Obj(opts)) {
+        // custom filesystem
+        if (is_Obj(opts.fs) && typeof opts.fs.statSync === "function") {
+            this.fs = opts.fs;
+        }
+    }
+}
+
+module.exports = Utils;
+
+// INSTANCED functions
+
+Utils.prototype.makeDir = function (/*String*/ folder) {
+    const self = this;
+
+    // Sync - make directories tree
+    function mkdirSync(/*String*/ fpath) {
+        let resolvedPath = fpath.split(self.sep)[0];
+        fpath.split(self.sep).forEach(function (name) {
+            if (!name || name.substr(-1, 1) === ":") return;
+            resolvedPath += self.sep + name;
+            var stat;
+            try {
+                stat = self.fs.statSync(resolvedPath);
+            } catch (e) {
+                self.fs.mkdirSync(resolvedPath);
+            }
+            if (stat && stat.isFile()) throw Errors.FILE_IN_THE_WAY.replace("%s", resolvedPath);
+        });
+    }
+
+    mkdirSync(folder);
+};
+
+Utils.prototype.writeFileTo = function (/*String*/ path, /*Buffer*/ content, /*Boolean*/ overwrite, /*Number*/ attr) {
+    const self = this;
+    if (self.fs.existsSync(path)) {
+        if (!overwrite) return false; // cannot overwrite
+
+        var stat = self.fs.statSync(path);
+        if (stat.isDirectory()) {
+            return false;
+        }
+    }
+    var folder = pth.dirname(path);
+    if (!self.fs.existsSync(folder)) {
+        self.makeDir(folder);
+    }
+
+    var fd;
+    try {
+        fd = self.fs.openSync(path, "w", 438); // 0666
+    } catch (e) {
+        self.fs.chmodSync(path, 438);
+        fd = self.fs.openSync(path, "w", 438);
+    }
+    if (fd) {
+        try {
+            self.fs.writeSync(fd, content, 0, content.length, 0);
+        } finally {
+            self.fs.closeSync(fd);
+        }
+    }
+    self.fs.chmodSync(path, attr || 438);
+    return true;
+};
+
+Utils.prototype.writeFileToAsync = function (/*String*/ path, /*Buffer*/ content, /*Boolean*/ overwrite, /*Number*/ attr, /*Function*/ callback) {
+    if (typeof attr === "function") {
+        callback = attr;
+        attr = undefined;
+    }
+
+    const self = this;
+
+    self.fs.exists(path, function (exist) {
+        if (exist && !overwrite) return callback(false);
+
+        self.fs.stat(path, function (err, stat) {
+            if (exist && stat.isDirectory()) {
+                return callback(false);
+            }
+
+            var folder = pth.dirname(path);
+            self.fs.exists(folder, function (exists) {
+                if (!exists) self.makeDir(folder);
+
+                self.fs.open(path, "w", 438, function (err, fd) {
+                    if (err) {
+                        self.fs.chmod(path, 438, function () {
+                            self.fs.open(path, "w", 438, function (err, fd) {
+                                self.fs.write(fd, content, 0, content.length, 0, function () {
+                                    self.fs.close(fd, function () {
+                                        self.fs.chmod(path, attr || 438, function () {
+                                            callback(true);
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    } else if (fd) {
+                        self.fs.write(fd, content, 0, content.length, 0, function () {
+                            self.fs.close(fd, function () {
+                                self.fs.chmod(path, attr || 438, function () {
+                                    callback(true);
+                                });
+                            });
+                        });
+                    } else {
+                        self.fs.chmod(path, attr || 438, function () {
+                            callback(true);
+                        });
+                    }
+                });
+            });
+        });
+    });
+};
+
+Utils.prototype.findFiles = function (/*String*/ path) {
+    const self = this;
+
+    function findSync(/*String*/ dir, /*RegExp*/ pattern, /*Boolean*/ recursive) {
+        if (typeof pattern === "boolean") {
+            recursive = pattern;
+            pattern = undefined;
+        }
+        let files = [];
+        self.fs.readdirSync(dir).forEach(function (file) {
+            var path = pth.join(dir, file);
+
+            if (self.fs.statSync(path).isDirectory() && recursive) files = files.concat(findSync(path, pattern, recursive));
+
+            if (!pattern || pattern.test(path)) {
+                files.push(pth.normalize(path) + (self.fs.statSync(path).isDirectory() ? self.sep : ""));
+            }
+        });
+        return files;
+    }
+
+    return findSync(path, undefined, true);
+};
+
+Utils.prototype.getAttributes = function () {};
+
+Utils.prototype.setAttributes = function () {};
+
+// STATIC functions
+
+// crc32 single update (it is part of crc32)
+Utils.crc32update = function (crc, byte) {
+    return crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+};
+
+Utils.crc32 = function (buf) {
+    if (typeof buf === "string") {
+        buf = Buffer.from(buf, "utf8");
+    }
+    // Generate crcTable
+    if (!crcTable.length) genCRCTable();
+
+    let len = buf.length;
+    let crc = ~0;
+    for (let off = 0; off < len; ) crc = Utils.crc32update(crc, buf[off++]);
+    // xor and cast as uint32 number
+    return ~crc >>> 0;
+};
+
+Utils.methodToString = function (/*Number*/ method) {
+    switch (method) {
+        case Constants.STORED:
+            return "STORED (" + method + ")";
+        case Constants.DEFLATED:
+            return "DEFLATED (" + method + ")";
+        default:
+            return "UNSUPPORTED (" + method + ")";
+    }
+};
+
+// removes ".." style path elements
+Utils.canonical = function (/*string*/ path) {
+    if (!path) return "";
+    // trick normalize think path is absolute
+    var safeSuffix = pth.posix.normalize("/" + path.split("\\").join("/"));
+    return pth.join(".", safeSuffix);
+};
+
+// make abolute paths taking prefix as root folder
+Utils.sanitize = function (/*string*/ prefix, /*string*/ name) {
+    prefix = pth.resolve(pth.normalize(prefix));
+    var parts = name.split("/");
+    for (var i = 0, l = parts.length; i < l; i++) {
+        var path = pth.normalize(pth.join(prefix, parts.slice(i, l).join(pth.sep)));
+        if (path.indexOf(prefix) === 0) {
+            return path;
+        }
+    }
+    return pth.normalize(pth.join(prefix, pth.basename(name)));
+};
+
+// converts buffer, Uint8Array, string types to buffer
+Utils.toBuffer = function toBuffer(/*buffer, Uint8Array, string*/ input) {
+    if (Buffer.isBuffer(input)) {
+        return input;
+    } else if (input instanceof Uint8Array) {
+        return Buffer.from(input);
+    } else {
+        // expect string all other values are invalid and return empty buffer
+        return typeof input === "string" ? Buffer.from(input, "utf8") : Buffer.alloc(0);
+    }
+};
+
+Utils.readBigUInt64LE = function (/*Buffer*/ buffer, /*int*/ index) {
+    var slice = Buffer.from(buffer.slice(index, index + 8));
+    slice.swap64();
+
+    return parseInt(`0x${slice.toString("hex")}`);
+};
+
+Utils.isWin = isWin; // Do we have windows system
+Utils.crcTable = crcTable;
+
+
+/***/ }),
+
+/***/ 74057:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+var Utils = __nccwpck_require__(35182),
+    Headers = __nccwpck_require__(14958),
+    Constants = Utils.Constants,
+    Methods = __nccwpck_require__(93928);
+
+module.exports = function (/*Buffer*/ input) {
+    var _entryHeader = new Headers.EntryHeader(),
+        _entryName = Buffer.alloc(0),
+        _comment = Buffer.alloc(0),
+        _isDirectory = false,
+        uncompressedData = null,
+        _extra = Buffer.alloc(0);
+
+    function getCompressedDataFromZip() {
+        if (!input || !Buffer.isBuffer(input)) {
+            return Buffer.alloc(0);
+        }
+        _entryHeader.loadDataHeaderFromBinary(input);
+        return input.slice(_entryHeader.realDataOffset, _entryHeader.realDataOffset + _entryHeader.compressedSize);
+    }
+
+    function crc32OK(data) {
+        // if bit 3 (0x08) of the general-purpose flags field is set, then the CRC-32 and file sizes are not known when the header is written
+        if ((_entryHeader.flags & 0x8) !== 0x8) {
+            if (Utils.crc32(data) !== _entryHeader.dataHeader.crc) {
+                return false;
+            }
+        } else {
+            // @TODO: load and check data descriptor header
+            // The fields in the local header are filled with zero, and the CRC-32 and size are appended in a 12-byte structure
+            // (optionally preceded by a 4-byte signature) immediately after the compressed data:
+        }
+        return true;
+    }
+
+    function decompress(/*Boolean*/ async, /*Function*/ callback, /*String, Buffer*/ pass) {
+        if (typeof callback === "undefined" && typeof async === "string") {
+            pass = async;
+            async = void 0;
+        }
+        if (_isDirectory) {
+            if (async && callback) {
+                callback(Buffer.alloc(0), Utils.Errors.DIRECTORY_CONTENT_ERROR); //si added error.
+            }
+            return Buffer.alloc(0);
+        }
+
+        var compressedData = getCompressedDataFromZip();
+
+        if (compressedData.length === 0) {
+            // File is empty, nothing to decompress.
+            if (async && callback) callback(compressedData);
+            return compressedData;
+        }
+
+        if (_entryHeader.encripted) {
+            if ("string" !== typeof pass && !Buffer.isBuffer(pass)) {
+                throw new Error("ADM-ZIP: Incompatible password parameter");
+            }
+            compressedData = Methods.ZipCrypto.decrypt(compressedData, _entryHeader, pass);
+        }
+
+        var data = Buffer.alloc(_entryHeader.size);
+
+        switch (_entryHeader.method) {
+            case Utils.Constants.STORED:
+                compressedData.copy(data);
+                if (!crc32OK(data)) {
+                    if (async && callback) callback(data, Utils.Errors.BAD_CRC); //si added error
+                    throw new Error(Utils.Errors.BAD_CRC);
+                } else {
+                    //si added otherwise did not seem to return data.
+                    if (async && callback) callback(data);
+                    return data;
+                }
+            case Utils.Constants.DEFLATED:
+                var inflater = new Methods.Inflater(compressedData);
+                if (!async) {
+                    const result = inflater.inflate(data);
+                    result.copy(data, 0);
+                    if (!crc32OK(data)) {
+                        throw new Error(Utils.Errors.BAD_CRC + " " + _entryName.toString());
+                    }
+                    return data;
+                } else {
+                    inflater.inflateAsync(function (result) {
+                        result.copy(result, 0);
+                        if (callback) {
+                            if (!crc32OK(result)) {
+                                callback(result, Utils.Errors.BAD_CRC); //si added error
+                            } else {
+                                callback(result);
+                            }
+                        }
+                    });
+                }
+                break;
+            default:
+                if (async && callback) callback(Buffer.alloc(0), Utils.Errors.UNKNOWN_METHOD);
+                throw new Error(Utils.Errors.UNKNOWN_METHOD);
+        }
+    }
+
+    function compress(/*Boolean*/ async, /*Function*/ callback) {
+        if ((!uncompressedData || !uncompressedData.length) && Buffer.isBuffer(input)) {
+            // no data set or the data wasn't changed to require recompression
+            if (async && callback) callback(getCompressedDataFromZip());
+            return getCompressedDataFromZip();
+        }
+
+        if (uncompressedData.length && !_isDirectory) {
+            var compressedData;
+            // Local file header
+            switch (_entryHeader.method) {
+                case Utils.Constants.STORED:
+                    _entryHeader.compressedSize = _entryHeader.size;
+
+                    compressedData = Buffer.alloc(uncompressedData.length);
+                    uncompressedData.copy(compressedData);
+
+                    if (async && callback) callback(compressedData);
+                    return compressedData;
+                default:
+                case Utils.Constants.DEFLATED:
+                    var deflater = new Methods.Deflater(uncompressedData);
+                    if (!async) {
+                        var deflated = deflater.deflate();
+                        _entryHeader.compressedSize = deflated.length;
+                        return deflated;
+                    } else {
+                        deflater.deflateAsync(function (data) {
+                            compressedData = Buffer.alloc(data.length);
+                            _entryHeader.compressedSize = data.length;
+                            data.copy(compressedData);
+                            callback && callback(compressedData);
+                        });
+                    }
+                    deflater = null;
+                    break;
+            }
+        } else if (async && callback) {
+            callback(Buffer.alloc(0));
+        } else {
+            return Buffer.alloc(0);
+        }
+    }
+
+    function readUInt64LE(buffer, offset) {
+        return (buffer.readUInt32LE(offset + 4) << 4) + buffer.readUInt32LE(offset);
+    }
+
+    function parseExtra(data) {
+        var offset = 0;
+        var signature, size, part;
+        while (offset < data.length) {
+            signature = data.readUInt16LE(offset);
+            offset += 2;
+            size = data.readUInt16LE(offset);
+            offset += 2;
+            part = data.slice(offset, offset + size);
+            offset += size;
+            if (Constants.ID_ZIP64 === signature) {
+                parseZip64ExtendedInformation(part);
+            }
+        }
+    }
+
+    //Override header field values with values from the ZIP64 extra field
+    function parseZip64ExtendedInformation(data) {
+        var size, compressedSize, offset, diskNumStart;
+
+        if (data.length >= Constants.EF_ZIP64_SCOMP) {
+            size = readUInt64LE(data, Constants.EF_ZIP64_SUNCOMP);
+            if (_entryHeader.size === Constants.EF_ZIP64_OR_32) {
+                _entryHeader.size = size;
+            }
+        }
+        if (data.length >= Constants.EF_ZIP64_RHO) {
+            compressedSize = readUInt64LE(data, Constants.EF_ZIP64_SCOMP);
+            if (_entryHeader.compressedSize === Constants.EF_ZIP64_OR_32) {
+                _entryHeader.compressedSize = compressedSize;
+            }
+        }
+        if (data.length >= Constants.EF_ZIP64_DSN) {
+            offset = readUInt64LE(data, Constants.EF_ZIP64_RHO);
+            if (_entryHeader.offset === Constants.EF_ZIP64_OR_32) {
+                _entryHeader.offset = offset;
+            }
+        }
+        if (data.length >= Constants.EF_ZIP64_DSN + 4) {
+            diskNumStart = data.readUInt32LE(Constants.EF_ZIP64_DSN);
+            if (_entryHeader.diskNumStart === Constants.EF_ZIP64_OR_16) {
+                _entryHeader.diskNumStart = diskNumStart;
+            }
+        }
+    }
+
+    return {
+        get entryName() {
+            return _entryName.toString();
+        },
+        get rawEntryName() {
+            return _entryName;
+        },
+        set entryName(val) {
+            _entryName = Utils.toBuffer(val);
+            var lastChar = _entryName[_entryName.length - 1];
+            _isDirectory = lastChar === 47 || lastChar === 92;
+            _entryHeader.fileNameLength = _entryName.length;
+        },
+
+        get extra() {
+            return _extra;
+        },
+        set extra(val) {
+            _extra = val;
+            _entryHeader.extraLength = val.length;
+            parseExtra(val);
+        },
+
+        get comment() {
+            return _comment.toString();
+        },
+        set comment(val) {
+            _comment = Utils.toBuffer(val);
+            _entryHeader.commentLength = _comment.length;
+        },
+
+        get name() {
+            var n = _entryName.toString();
+            return _isDirectory
+                ? n
+                      .substr(n.length - 1)
+                      .split("/")
+                      .pop()
+                : n.split("/").pop();
+        },
+        get isDirectory() {
+            return _isDirectory;
+        },
+
+        getCompressedData: function () {
+            return compress(false, null);
+        },
+
+        getCompressedDataAsync: function (/*Function*/ callback) {
+            compress(true, callback);
+        },
+
+        setData: function (value) {
+            uncompressedData = Utils.toBuffer(value);
+            if (!_isDirectory && uncompressedData.length) {
+                _entryHeader.size = uncompressedData.length;
+                _entryHeader.method = Utils.Constants.DEFLATED;
+                _entryHeader.crc = Utils.crc32(value);
+                _entryHeader.changed = true;
+            } else {
+                // folders and blank files should be stored
+                _entryHeader.method = Utils.Constants.STORED;
+            }
+        },
+
+        getData: function (pass) {
+            if (_entryHeader.changed) {
+                return uncompressedData;
+            } else {
+                return decompress(false, null, pass);
+            }
+        },
+
+        getDataAsync: function (/*Function*/ callback, pass) {
+            if (_entryHeader.changed) {
+                callback(uncompressedData);
+            } else {
+                decompress(true, callback, pass);
+            }
+        },
+
+        set attr(attr) {
+            _entryHeader.attr = attr;
+        },
+        get attr() {
+            return _entryHeader.attr;
+        },
+
+        set header(/*Buffer*/ data) {
+            _entryHeader.loadFromBinary(data);
+        },
+
+        get header() {
+            return _entryHeader;
+        },
+
+        packHeader: function () {
+            // 1. create header (buffer)
+            var header = _entryHeader.entryHeaderToBinary();
+            var addpos = Utils.Constants.CENHDR;
+            // 2. add file name
+            _entryName.copy(header, addpos);
+            addpos += _entryName.length;
+            // 3. add extra data
+            if (_entryHeader.extraLength) {
+                _extra.copy(header, addpos);
+                addpos += _entryHeader.extraLength;
+            }
+            // 4. add file comment
+            if (_entryHeader.commentLength) {
+                _comment.copy(header, addpos);
+            }
+            return header;
+        },
+
+        toJSON: function () {
+            const bytes = function (nr) {
+                return "<" + ((nr && nr.length + " bytes buffer") || "null") + ">";
+            };
+
+            return {
+                entryName: this.entryName,
+                name: this.name,
+                comment: this.comment,
+                isDirectory: this.isDirectory,
+                header: _entryHeader.toJSON(),
+                compressedData: bytes(input),
+                data: bytes(uncompressedData)
+            };
+        },
+
+        toString: function () {
+            return JSON.stringify(this.toJSON(), null, "\t");
+        }
+    };
+};
+
+
+/***/ }),
+
+/***/ 7744:
+/***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
+
+const ZipEntry = __nccwpck_require__(74057);
+const Headers = __nccwpck_require__(14958);
+const Utils = __nccwpck_require__(35182);
+
+module.exports = function (/*Buffer|null*/ inBuffer, /** object */ options) {
+    var entryList = [],
+        entryTable = {},
+        _comment = Buffer.alloc(0),
+        mainHeader = new Headers.MainHeader(),
+        loadedEntries = false;
+
+    // assign options
+    const opts = Object.assign(Object.create(null), options);
+
+    const { noSort } = opts;
+
+    if (inBuffer) {
+        // is a memory buffer
+        readMainHeader(opts.readEntries);
+    } else {
+        // none. is a new file
+        loadedEntries = true;
+    }
+
+    function iterateEntries(callback) {
+        const totalEntries = mainHeader.diskEntries; // total number of entries
+        let index = mainHeader.offset; // offset of first CEN header
+
+        for (let i = 0; i < totalEntries; i++) {
+            let tmp = index;
+            const entry = new ZipEntry(inBuffer);
+
+            entry.header = inBuffer.slice(tmp, (tmp += Utils.Constants.CENHDR));
+            entry.entryName = inBuffer.slice(tmp, (tmp += entry.header.fileNameLength));
+
+            index += entry.header.entryHeaderSize;
+
+            callback(entry);
+        }
+    }
+
+    function readEntries() {
+        loadedEntries = true;
+        entryTable = {};
+        entryList = new Array(mainHeader.diskEntries); // total number of entries
+        var index = mainHeader.offset; // offset of first CEN header
+        for (var i = 0; i < entryList.length; i++) {
+            var tmp = index,
+                entry = new ZipEntry(inBuffer);
+            entry.header = inBuffer.slice(tmp, (tmp += Utils.Constants.CENHDR));
+
+            entry.entryName = inBuffer.slice(tmp, (tmp += entry.header.fileNameLength));
+
+            if (entry.header.extraLength) {
+                entry.extra = inBuffer.slice(tmp, (tmp += entry.header.extraLength));
+            }
+
+            if (entry.header.commentLength) entry.comment = inBuffer.slice(tmp, tmp + entry.header.commentLength);
+
+            index += entry.header.entryHeaderSize;
+
+            entryList[i] = entry;
+            entryTable[entry.entryName] = entry;
+        }
+    }
+
+    function readMainHeader(/*Boolean*/ readNow) {
+        var i = inBuffer.length - Utils.Constants.ENDHDR, // END header size
+            max = Math.max(0, i - 0xffff), // 0xFFFF is the max zip file comment length
+            n = max,
+            endStart = inBuffer.length,
+            endOffset = -1, // Start offset of the END header
+            commentEnd = 0;
+
+        for (i; i >= n; i--) {
+            if (inBuffer[i] !== 0x50) continue; // quick check that the byte is 'P'
+            if (inBuffer.readUInt32LE(i) === Utils.Constants.ENDSIG) {
+                // "PK\005\006"
+                endOffset = i;
+                commentEnd = i;
+                endStart = i + Utils.Constants.ENDHDR;
+                // We already found a regular signature, let's look just a bit further to check if there's any zip64 signature
+                n = i - Utils.Constants.END64HDR;
+                continue;
+            }
+
+            if (inBuffer.readUInt32LE(i) === Utils.Constants.END64SIG) {
+                // Found a zip64 signature, let's continue reading the whole zip64 record
+                n = max;
+                continue;
+            }
+
+            if (inBuffer.readUInt32LE(i) === Utils.Constants.ZIP64SIG) {
+                // Found the zip64 record, let's determine it's size
+                endOffset = i;
+                endStart = i + Utils.readBigUInt64LE(inBuffer, i + Utils.Constants.ZIP64SIZE) + Utils.Constants.ZIP64LEAD;
+                break;
+            }
+        }
+
+        if (!~endOffset) throw new Error(Utils.Errors.INVALID_FORMAT);
+
+        mainHeader.loadFromBinary(inBuffer.slice(endOffset, endStart));
+        if (mainHeader.commentLength) {
+            _comment = inBuffer.slice(commentEnd + Utils.Constants.ENDHDR);
+        }
+        if (readNow) readEntries();
+    }
+
+    function sortEntries() {
+        if (entryList.length > 1 && !noSort) {
+            entryList.sort((a, b) => a.entryName.toLowerCase().localeCompare(b.entryName.toLowerCase()));
+        }
+    }
+
+    return {
+        /**
+         * Returns an array of ZipEntry objects existent in the current opened archive
+         * @return Array
+         */
+        get entries() {
+            if (!loadedEntries) {
+                readEntries();
+            }
+            return entryList;
+        },
+
+        /**
+         * Archive comment
+         * @return {String}
+         */
+        get comment() {
+            return _comment.toString();
+        },
+        set comment(val) {
+            _comment = Utils.toBuffer(val);
+            mainHeader.commentLength = _comment.length;
+        },
+
+        getEntryCount: function () {
+            if (!loadedEntries) {
+                return mainHeader.diskEntries;
+            }
+
+            return entryList.length;
+        },
+
+        forEach: function (callback) {
+            if (!loadedEntries) {
+                iterateEntries(callback);
+                return;
+            }
+
+            entryList.forEach(callback);
+        },
+
+        /**
+         * Returns a reference to the entry with the given name or null if entry is inexistent
+         *
+         * @param entryName
+         * @return ZipEntry
+         */
+        getEntry: function (/*String*/ entryName) {
+            if (!loadedEntries) {
+                readEntries();
+            }
+            return entryTable[entryName] || null;
+        },
+
+        /**
+         * Adds the given entry to the entry list
+         *
+         * @param entry
+         */
+        setEntry: function (/*ZipEntry*/ entry) {
+            if (!loadedEntries) {
+                readEntries();
+            }
+            entryList.push(entry);
+            entryTable[entry.entryName] = entry;
+            mainHeader.totalEntries = entryList.length;
+        },
+
+        /**
+         * Removes the entry with the given name from the entry list.
+         *
+         * If the entry is a directory, then all nested files and directories will be removed
+         * @param entryName
+         */
+        deleteEntry: function (/*String*/ entryName) {
+            if (!loadedEntries) {
+                readEntries();
+            }
+            var entry = entryTable[entryName];
+            if (entry && entry.isDirectory) {
+                var _self = this;
+                this.getEntryChildren(entry).forEach(function (child) {
+                    if (child.entryName !== entryName) {
+                        _self.deleteEntry(child.entryName);
+                    }
+                });
+            }
+            entryList.splice(entryList.indexOf(entry), 1);
+            delete entryTable[entryName];
+            mainHeader.totalEntries = entryList.length;
+        },
+
+        /**
+         *  Iterates and returns all nested files and directories of the given entry
+         *
+         * @param entry
+         * @return Array
+         */
+        getEntryChildren: function (/*ZipEntry*/ entry) {
+            if (!loadedEntries) {
+                readEntries();
+            }
+            if (entry && entry.isDirectory) {
+                const list = [];
+                const name = entry.entryName;
+                const len = name.length;
+
+                entryList.forEach(function (zipEntry) {
+                    if (zipEntry.entryName.substr(0, len) === name) {
+                        list.push(zipEntry);
+                    }
+                });
+                return list;
+            }
+            return [];
+        },
+
+        /**
+         * Returns the zip file
+         *
+         * @return Buffer
+         */
+        compressToBuffer: function () {
+            if (!loadedEntries) {
+                readEntries();
+            }
+            sortEntries();
+
+            const dataBlock = [];
+            const entryHeaders = [];
+            let totalSize = 0;
+            let dindex = 0;
+
+            mainHeader.size = 0;
+            mainHeader.offset = 0;
+
+            for (const entry of entryList) {
+                // compress data and set local and entry header accordingly. Reason why is called first
+                const compressedData = entry.getCompressedData();
+                // 1. construct data header
+                entry.header.offset = dindex;
+                const dataHeader = entry.header.dataHeaderToBinary();
+                const entryNameLen = entry.rawEntryName.length;
+                // 1.2. postheader - data after data header
+                const postHeader = Buffer.alloc(entryNameLen + entry.extra.length);
+                entry.rawEntryName.copy(postHeader, 0);
+                postHeader.copy(entry.extra, entryNameLen);
+
+                // 2. offsets
+                const dataLength = dataHeader.length + postHeader.length + compressedData.length;
+                dindex += dataLength;
+
+                // 3. store values in sequence
+                dataBlock.push(dataHeader);
+                dataBlock.push(postHeader);
+                dataBlock.push(compressedData);
+
+                // 4. construct entry header
+                const entryHeader = entry.packHeader();
+                entryHeaders.push(entryHeader);
+                // 5. update main header
+                mainHeader.size += entryHeader.length;
+                totalSize += dataLength + entryHeader.length;
+            }
+
+            totalSize += mainHeader.mainHeaderSize; // also includes zip file comment length
+            // point to end of data and beginning of central directory first record
+            mainHeader.offset = dindex;
+
+            dindex = 0;
+            const outBuffer = Buffer.alloc(totalSize);
+            // write data blocks
+            for (const content of dataBlock) {
+                content.copy(outBuffer, dindex);
+                dindex += content.length;
+            }
+
+            // write central directory entries
+            for (const content of entryHeaders) {
+                content.copy(outBuffer, dindex);
+                dindex += content.length;
+            }
+
+            // write main header
+            const mh = mainHeader.toBinary();
+            if (_comment) {
+                _comment.copy(mh, Utils.Constants.ENDHDR); // add zip file comment
+            }
+            mh.copy(outBuffer, dindex);
+
+            return outBuffer;
+        },
+
+        toAsyncBuffer: function (/*Function*/ onSuccess, /*Function*/ onFail, /*Function*/ onItemStart, /*Function*/ onItemEnd) {
+            try {
+                if (!loadedEntries) {
+                    readEntries();
+                }
+                sortEntries();
+
+                const dataBlock = [];
+                const entryHeaders = [];
+                let totalSize = 0;
+                let dindex = 0;
+
+                mainHeader.size = 0;
+                mainHeader.offset = 0;
+
+                const compress2Buffer = function (entryLists) {
+                    if (entryLists.length) {
+                        const entry = entryLists.pop();
+                        const name = entry.entryName + entry.extra.toString();
+                        if (onItemStart) onItemStart(name);
+                        entry.getCompressedDataAsync(function (compressedData) {
+                            if (onItemEnd) onItemEnd(name);
+
+                            entry.header.offset = dindex;
+                            // data header
+                            const dataHeader = entry.header.dataHeaderToBinary();
+                            const postHeader = Buffer.alloc(name.length, name);
+                            const dataLength = dataHeader.length + postHeader.length + compressedData.length;
+
+                            dindex += dataLength;
+
+                            dataBlock.push(dataHeader);
+                            dataBlock.push(postHeader);
+                            dataBlock.push(compressedData);
+
+                            const entryHeader = entry.packHeader();
+                            entryHeaders.push(entryHeader);
+                            mainHeader.size += entryHeader.length;
+                            totalSize += dataLength + entryHeader.length;
+
+                            compress2Buffer(entryLists);
+                        });
+                    } else {
+                        totalSize += mainHeader.mainHeaderSize; // also includes zip file comment length
+                        // point to end of data and beginning of central directory first record
+                        mainHeader.offset = dindex;
+
+                        dindex = 0;
+                        const outBuffer = Buffer.alloc(totalSize);
+                        dataBlock.forEach(function (content) {
+                            content.copy(outBuffer, dindex); // write data blocks
+                            dindex += content.length;
+                        });
+                        entryHeaders.forEach(function (content) {
+                            content.copy(outBuffer, dindex); // write central directory entries
+                            dindex += content.length;
+                        });
+
+                        const mh = mainHeader.toBinary();
+                        if (_comment) {
+                            _comment.copy(mh, Utils.Constants.ENDHDR); // add zip file comment
+                        }
+
+                        mh.copy(outBuffer, dindex); // write main header
+
+                        onSuccess(outBuffer);
+                    }
+                };
+
+                compress2Buffer(entryList);
+            } catch (e) {
+                onFail(e);
+            }
+        }
+    };
+};
+
+
+/***/ }),
+
 /***/ 61231:
 /***/ ((module, __unused_webpack_exports, __nccwpck_require__) => {
 
@@ -64297,27 +67136,30 @@ try {
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
-/* harmony export */   "D": () => (/* binding */ Cve)
+/* harmony export */   "DW": () => (/* binding */ Cve)
 /* harmony export */ });
-/* unused harmony export CveIdError */
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(57147);
 /* harmony import */ var fs__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(fs__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(71017);
 /* harmony import */ var path__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__nccwpck_require__.n(path__WEBPACK_IMPORTED_MODULE_1__);
+/* harmony import */ var _core_CveId_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(60672);
 /**
  * CVE Object that wraps various CVE-related operations into a single object, including
  *  - read in a CVE JSON 5 file
  *  - auto-convert CVE JSON 5 string to Cve5 object
  *  - output as optionally prettyprinted JSON 5 string
  *  - write to a file or to proper repository location
+ *
+ * @todo refactoring CVE IDs from string to CveId.  Currently, only using CveId class methods, but
+ *  the data member cveId is still just a string
  */
 
 
-class CveIdError extends Error {
-}
+
+
 class Cve {
     _defaultOutdir = process.env.CVE_UTILS_DEFAULT_OUTDIR;
-    cveId;
+    cveId; // note we are still only using strings for CVE ID in CVE
     containers;
     cveMetadata;
     dataType;
@@ -64340,19 +67182,20 @@ class Cve {
      *  @returns string representing the partial path the cve belongs in (e.g., /1999/1xxx/CVE-1999-0001)
     */
     static toCvePath(cveId) {
-        const parts = cveId.split('-');
-        const year = parseInt(parts[1]);
-        const num = parseInt(parts[2]);
-        if (parts[0] === 'CVE'
-            && Cve.getAllYears().includes(year)
-            && num >= 1) {
-            parts.shift(); // removes the 'CVE'
-            const thousands = Math.floor(num / 1000).toFixed(0);
-            return `${parts[0]}/${thousands}xxx/${cveId}`;
-        }
-        else {
-            throw new CveIdError(`Error in CVE ID:  ${cveId}`);
-        }
+        return _core_CveId_js__WEBPACK_IMPORTED_MODULE_2__/* .CveId.toCvePath */ .a.toCvePath(cveId);
+        // const parts = cveId.split('-');
+        // const year = parseInt(parts[1]);
+        // const num = parseInt(parts[2]);
+        // if (parts[0] === 'CVE'
+        //   && Cve.getAllYears().includes(year)
+        //   && num >= 1) {
+        //   parts.shift();  // removes the 'CVE'
+        //   const thousands = Math.floor(num / 1000).toFixed(0);
+        //   return `${parts[0]}/${thousands}xxx/${cveId}`;
+        // }
+        // else {
+        //   throw new CveIdError(`Error in CVE ID:  ${cveId}`);
+        // }
     }
     /** returns an array of CVE years represented as numbers [1999...2024] */
     static getAllYears() {
@@ -64360,18 +67203,20 @@ class Cve {
         // const startYear = 1999;
         // const endYear = 2024;
         // return [...Array(endYear - startYear + 1).keys()].map(i => i + startYear);
-        return [
-            1970,
-            1999, 2000, 2001, 2002, 2003,
-            2004, 2005, 2006, 2007, 2008,
-            2009, 2010, 2011, 2012, 2013,
-            2014, 2015, 2016, 2017, 2018,
-            2019, 2020, 2021, 2022, 2023,
-            2024, 2025
-        ];
+        // return [
+        //   1970, // used for testing, validating
+        //   1999, 2000, 2001, 2002, 2003,
+        //   2004, 2005, 2006, 2007, 2008,
+        //   2009, 2010, 2011, 2012, 2013,
+        //   2014, 2015, 2016, 2017, 2018,
+        //   2019, 2020, 2021, 2022, 2023,
+        //   2024, 2025
+        // ];
+        return _core_CveId_js__WEBPACK_IMPORTED_MODULE_2__/* .CveId.getAllYears */ .a.getAllYears();
     }
     toCvePath() {
-        return Cve.toCvePath(this.cveId);
+        // return Cve.toCvePath(this.cveId);
+        return _core_CveId_js__WEBPACK_IMPORTED_MODULE_2__/* .CveId.toCvePath */ .a.toCvePath(this.cveId);
     }
     toJsonString(prettyPrint = true) {
         if (prettyPrint) {
@@ -64460,7 +67305,7 @@ class CveService extends ApiService {
     async getCveUsingId(id) {
         let cveService = new CveService();
         const response = await cveService.cve({ id });
-        let cve = new Cve/* Cve */.D(response);
+        let cve = new Cve/* Cve */.DW(response);
         return cve;
     }
     /** returns array of CVE that has been added/modified/deleted since timestamp window */
@@ -64470,7 +67315,7 @@ class CveService extends ApiService {
         const response = await cveService.cve({ queryString });
         let cves = [];
         response.cveRecords.forEach(obj => {
-            const cve = new Cve/* Cve */.D(obj);
+            const cve = new Cve/* Cve */.DW(obj);
             cves.push(cve);
         });
         // console.log(`response number of items=`, response.cveRecords.length);
@@ -64510,221 +67355,20 @@ class CveService extends ApiService {
 
 /***/ }),
 
-/***/ 14769:
+/***/ 18080:
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
-
-// EXPORTS
-__nccwpck_require__.d(__webpack_exports__, {
-  "pL": () => (/* binding */ CveUpdater)
-});
-
-// UNUSED EXPORTS: kActivity_UpdateByModificationDateWindow, kActivity_UpdateByPage
-
-// EXTERNAL MODULE: ./node_modules/date-fns/index.js
-var date_fns = __nccwpck_require__(73314);
-// EXTERNAL MODULE: ./src/core/Activity.ts
-var Activity = __nccwpck_require__(68099);
-// EXTERNAL MODULE: ./src/Cve.ts
-var Cve = __nccwpck_require__(99081);
-// EXTERNAL MODULE: ./src/CveService.ts + 1 modules
-var CveService = __nccwpck_require__(24086);
-// EXTERNAL MODULE: ./node_modules/simple-git/dist/esm/index.js
-var esm = __nccwpck_require__(92628);
-// EXTERNAL MODULE: ./node_modules/lodash/lodash.js
-var lodash = __nccwpck_require__(90250);
-;// CONCATENATED MODULE: ./src/core/CveCore.ts
-/**
- *  CveCore is made up of mostly the metadata portion of a CVE JSON 5 object
- *    plus (eventually) of additional metadata (such as SHA) that is useful for managing/validating CVEs
- */
-
-class CveCore {
-    cveId;
-    state; //"RESERVED" | "PUBLISHED" | "REJECTED";
-    assignerOrgId;
-    assignerShortName;
-    dateReserved;
-    datePublished;
-    dateUpdated;
-    // sha?:string  // this will hold a SHA of the actual CVE itself
-    // constructors and factories
-    constructor(cveId) {
-        this.cveId = cveId; //(cveId instanceof CveId) ? cveId : new CveId(cveId);
-    }
-    static fromCveMetadata(metadata) {
-        let obj = new CveCore(metadata.cveId);
-        obj.state = metadata?.state;
-        obj.assignerOrgId = metadata?.assignerOrgId;
-        obj.assignerShortName = metadata?.assignerShortName;
-        obj.dateReserved = metadata?.dateReserved;
-        obj.datePublished = metadata?.datePublished;
-        // obj.dateUpdated = metadata?.dateUpdated
-        return obj;
-    }
-    static fromCve(cve) {
-        return this.fromCveMetadata(cve.cveMetadata);
-    }
-    toJson(whitespace = 2) {
-        return JSON.stringify(this, (k, v) => v ?? undefined, whitespace);
-    }
-    getCvePath() {
-        return Cve/* Cve.toCvePath */.D.toCvePath(this.cveId);
-    }
-}
-
-;// CONCATENATED MODULE: ./src/core/Delta.ts
-/**
- *  Delta object, calculates deltas in activities
- */
-
-
-
-
-var DeltaQueue;
-(function (DeltaQueue) {
-    DeltaQueue[DeltaQueue["kNew"] = 1] = "kNew";
-    DeltaQueue[DeltaQueue["kPublished"] = 2] = "kPublished";
-    DeltaQueue[DeltaQueue["kUpdated"] = 3] = "kUpdated";
-    DeltaQueue[DeltaQueue["kUnknown"] = 4] = "kUnknown";
-})(DeltaQueue = DeltaQueue || (DeltaQueue = {}));
-class Delta /*implements DeltaProps*/ {
-    numberOfChanges = 0;
-    // published: CveCore[] = [];
-    new = [];
-    updated = [];
-    unknown = [];
-    /** constructor
-     *  @param prevDelta a previous delta to intialize this object, essentially appending new
-     *                   deltas to the privous ones (default is none)
-     */
-    constructor(prevDelta = null) {
-        // update with previous delta, if any
-        if (prevDelta) {
-            this.numberOfChanges = prevDelta?.numberOfChanges ?? 0;
-            this.new = prevDelta?.new ? (0,lodash.cloneDeep)(prevDelta.new) : [];
-            // this.published = prevDelta?.published ? cloneDeep(prevDelta.published) : [];
-            this.updated = prevDelta?.updated ? (0,lodash.cloneDeep)(prevDelta.updated) : [];
-        }
-    }
-    // ----- static functions ----- ----- 
-    /** returns useful components of a CveID:
-     *   - its name
-     *   - its partial path in the repository
-     *  @param path a full or partial filespec (for example, ./abc/def/CVE-1970-0001.json)
-     *  @todo should be in a separate CveId or Cve class
-     */
-    static getCveIdMetaData(path) {
-        try {
-            const cveId = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
-            const cveIdPath = `${Cve/* Cve.toCvePath */.D.toCvePath(cveId)}`;
-            return [cveId, cveIdPath];
-        }
-        catch (ex) {
-            // not a CVE, ignore and just return
-            return [undefined, undefined];
-        }
-    }
-    /** calculates the delta filtering using the specified directory
-     *  @param prevDelta the previous delta
-     *  @param dir directory to filter (note that this cannot have `./` or `../` since this is only doing a simple string match)
-     */
-    static async calculateDelta(prevDelta, dir) {
-        console.log(`calcuating delta in dir=${dir}`);
-        const delta = new Delta(prevDelta);
-        const git = (0,esm/* simpleGit */.o5)('./', { binary: 'git' });
-        const status = await git.status();
-        // console.log(`status = ${JSON.stringify(status, null, 2)}`);
-        const notAddedList = status.not_added.filter(item => item.startsWith(dir));
-        const modifiedList = status.modified.filter(item => item.startsWith(dir));
-        notAddedList.forEach(item => {
-            const cveId = Delta.getCveIdMetaData(item)[0];
-            if (cveId) {
-                delta.add(new CveCore(cveId), DeltaQueue.kNew);
-            }
-        });
-        modifiedList.forEach(item => {
-            const cveId = Delta.getCveIdMetaData(item)[0];
-            if (cveId) {
-                delta.add(new CveCore(cveId), DeltaQueue.kUpdated);
-            }
-        });
-        return delta;
-    }
-    // ----- private functions ----- -----
-    /**
-     * pure function:  given origQueue, this will either add cve if it is not already in origQueue
-     * or replace the original in origQueue with cve
-     * @param cve the CVE to be added/replaced
-     * @param origQueue the original queue
-     * @returns a typle:
-     *    [0] is the new queue (with the CVE either added or replace older)
-     *    [1] either 0 if CVE is replaced, or 1 if new, intended to be += to this.numberOfChanges (deprecated)
-     */
-    _addOrReplace(cve, origQueue) {
-        const i = (0,lodash.findIndex)(origQueue, item => item.cveId == cve.cveId);
-        if (i < 0) {
-            return [[...origQueue, cve], 1];
-        }
-        else {
-            // otherwise remove the original and add the new since it is more updated
-            const newQueue = [...origQueue];
-            newQueue[i] = cve;
-            return [newQueue, 0];
-        }
-    }
-    /** calculates the numberOfChanges property
-     * @returns the total number of deltas in all the queues
-     */
-    calculateNumDelta() {
-        return this.new.length
-            // + this.published.length
-            + this.updated.length
-            + this.unknown.length;
-    }
-    /** adds a cveCore object into one of the queues in a delta object
-     *  @param cve a CveCore object to be added
-     *  @param queue the DeltaQueue enum specifying which queue to add to
-     */
-    add(cve, queue) {
-        let tuple;
-        switch (queue) {
-            case DeltaQueue.kNew:
-                tuple = this._addOrReplace(cve, this.new);
-                // this.numberOfChanges += tuple[1];
-                this.new = tuple[0];
-                break;
-            // case DeltaQueue.kPublished:
-            //   tuple = this._addOrReplace(cve, this.published);
-            //   this.published = tuple[0];
-            //   break;
-            case DeltaQueue.kUpdated:
-                tuple = this._addOrReplace(cve, this.updated);
-                this.updated = tuple[0];
-                break;
-            default:
-                this.unknown.push(cve);
-                break;
-        }
-        this.numberOfChanges = this.calculateNumDelta();
-    }
-    /** summarize the information in this Delta object in human-readable form */
-    toText() {
-        const newCves = [];
-        this.new.forEach(item => newCves.push(item.cveId));
-        const updatedCves = [];
-        this.updated.forEach(item => updatedCves.push(item.cveId));
-        const retstr = `${this.numberOfChanges} changes this operation:
-      - ${this.new.length} new CVEs:  ${newCves.join(', ')}
-      - ${this.updated.length} updated CVEs: ${updatedCves.join(', ')}.
-    `;
-        return retstr;
-    }
-}
-
-// EXTERNAL MODULE: ./src/core/ActivityLog.ts
-var ActivityLog = __nccwpck_require__(51474);
-;// CONCATENATED MODULE: ./src/CveUpdater.ts
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "pL": () => (/* binding */ CveUpdater)
+/* harmony export */ });
+/* unused harmony exports kActivity_UpdateByModificationDateWindow, kActivity_UpdateByPage */
+/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(73314);
+/* harmony import */ var date_fns__WEBPACK_IMPORTED_MODULE_5___default = /*#__PURE__*/__nccwpck_require__.n(date_fns__WEBPACK_IMPORTED_MODULE_5__);
+/* harmony import */ var _core_Activity_js__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(68099);
+/* harmony import */ var _Cve_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(99081);
+/* harmony import */ var _CveService_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(24086);
+/* harmony import */ var _core_Delta_js__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(13989);
+/* harmony import */ var _core_ActivityLog_js__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(51474);
 /**
  * Updates repository's CVEs using CveService
  */
@@ -64744,7 +67388,7 @@ class CveUpdater {
     _activityLog;
     constructor(activity, logOptions) {
         // console.log(`CveUpdater(options=${JSON.stringify(logOptions)})`)
-        this._activityLog = new ActivityLog/* ActivityLog */.D(logOptions);
+        this._activityLog = new _core_ActivityLog_js__WEBPACK_IMPORTED_MODULE_4__/* .ActivityLog */ .D(logOptions);
     }
     // ----- CVE updates -----
     /** retrieves the CVEs in a window of time
@@ -64767,7 +67411,7 @@ class CveUpdater {
         const timestampStart = Date.now();
         let actualStartWindow = startWindow;
         let actualEndWindow = endWindow;
-        const service = new CveService/* CveService */.o();
+        const service = new _CveService_js__WEBPACK_IMPORTED_MODULE_2__/* .CveService */ .o();
         let queryString = '';
         let totalCount = 0;
         let tries = 0;
@@ -64776,7 +67420,7 @@ class CveUpdater {
             queryString = `time_modified.gt=${actualStartWindow}&time_modified.lt=${actualEndWindow}`;
             const resp = await service.cve({ queryString: `count_only=1&${queryString}` });
             totalCount = parseInt(resp.totalCount);
-            diff = (0,date_fns.differenceInSeconds)((0,date_fns.parseISO)(actualEndWindow), (0,date_fns.parseISO)(actualStartWindow));
+            diff = (0,date_fns__WEBPACK_IMPORTED_MODULE_5__.differenceInSeconds)((0,date_fns__WEBPACK_IMPORTED_MODULE_5__.parseISO)(actualEndWindow), (0,date_fns__WEBPACK_IMPORTED_MODULE_5__.parseISO)(actualStartWindow));
             console.log(`try=${tries}:  currentCount=${totalCount} / ${max}  (diff=${diff}: [${actualStartWindow},${actualEndWindow}])`);
             if (totalCount > max) {
                 // const timeStart = parseISO(actualStartWindow).valueOf();
@@ -64785,7 +67429,7 @@ class CveUpdater {
                 // const newTimeEnd = timeStart + Math.floor((timeEnd - timeStart) / 2);
                 // console.log(`${newTimeEnd}`);
                 // actualEndWindow = new Date(newTimeEnd).toISOString();
-                actualEndWindow = (0,date_fns.add)((0,date_fns.parseISO)(actualStartWindow), { seconds: diff / 2 }).toISOString();
+                actualEndWindow = (0,date_fns__WEBPACK_IMPORTED_MODULE_5__.add)((0,date_fns__WEBPACK_IMPORTED_MODULE_5__.parseISO)(actualStartWindow), { seconds: diff / 2 }).toISOString();
             }
             tries++;
         } while (totalCount > max && diff > 0 && tries < 20);
@@ -64834,7 +67478,7 @@ class CveUpdater {
         // write file to repository
         if (writeDir) {
             cves.cveRecords.forEach(json => {
-                const cve = new Cve/* Cve */.D(json);
+                const cve = new _Cve_js__WEBPACK_IMPORTED_MODULE_1__/* .Cve */ .DW(json);
                 cve.writeToCvePath(writeDir);
             });
         }
@@ -64853,13 +67497,13 @@ class CveUpdater {
         const timestampStart = Date.now();
         // start an ActivityLog for the steps to be prepended into
         const startTime = new Date(timestampStart).toISOString();
-        const activity = new Activity/* Activity */.c({
+        const activity = new _core_Activity_js__WEBPACK_IMPORTED_MODULE_0__/* .Activity */ .c({
             startTime,
             stopTime: '',
             duration: '',
             name: `cves in window`,
             // url: `tbd`,
-            status: Activity/* ActivityStatus.Completed */.f.Completed,
+            status: _core_Activity_js__WEBPACK_IMPORTED_MODULE_0__/* .ActivityStatus.Completed */ .f.Completed,
             // errors: [{ "tbd": "tbd" }],
             // notes: {
             //   // "function": "getCvesInWindow()",
@@ -64883,7 +67527,7 @@ class CveUpdater {
             }
         } while (step && newStartWindow < newEndWindow);
         // add remainder of Activity properties
-        activity.delta = await Delta.calculateDelta({}, `${this._repository_base}`);
+        activity.delta = await _core_Delta_js__WEBPACK_IMPORTED_MODULE_3__/* .Delta.calculateDelta */ .i.calculateDelta({}, `${this._repository_base}`);
         // console.log(`activity after checking for delta:  ${JSON.stringify(activity, null, 2)}`);
         const timestampEnd = Date.now();
         activity.stopTime = new Date(timestampEnd).toISOString();
@@ -64897,7 +67541,7 @@ class CveUpdater {
     */
     async getCvesByPage(page, writeDir = undefined) {
         const timestampStart = Date.now();
-        const service = new CveService/* CveService */.o();
+        const service = new _CveService_js__WEBPACK_IMPORTED_MODULE_2__/* .CveService */ .o();
         const queryString = `page=${page}`;
         const cves = await service.cve({ queryString });
         // console.log(`getCvesByPage().cves=${JSON.stringify(cves, null, 2)}`);
@@ -64950,7 +67594,7 @@ class CveUpdater {
         // write file to repository
         if (writeDir) {
             cves.cveRecords.forEach(json => {
-                const cve = new Cve/* Cve */.D(json);
+                const cve = new _Cve_js__WEBPACK_IMPORTED_MODULE_1__/* .Cve */ .DW(json);
                 cve.writeToCvePath(writeDir);
             });
         }
@@ -64998,7 +67642,9 @@ class CveUpdater {
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
 /* harmony export */   "d": () => (/* binding */ DateCommand)
 /* harmony export */ });
+/* harmony import */ var _core_dateUtils_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(75197);
 /* harmony import */ var _GenericCommand_js__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(20248);
+
 
 class DateCommand extends _GenericCommand_js__WEBPACK_IMPORTED_MODULE_0__/* .GenericCommand */ .u {
     constructor(name, program) {
@@ -65011,15 +67657,57 @@ class DateCommand extends _GenericCommand_js__WEBPACK_IMPORTED_MODULE_0__/* .Gen
     }
     async run(options) {
         super.prerun({ display: false, ...options });
-        // console.log(`date command called with `);
+        // console.log(`delta command called with ${JSON.stringify(options,null,2)}`);
         const timestamp = new Date();
         console.log(`time  : ${timestamp}`);
-        console.log(`ISO   : ${DateCommand.getIsoDate(timestamp)}`);
+        console.log(`ISO   : ${_core_dateUtils_js__WEBPACK_IMPORTED_MODULE_1__/* .DateUtils.getIsoDate */ .E.getIsoDate(timestamp)}`);
         super.postrun({ display: false });
     }
-    static getIsoDate(timestamp = null) {
-        const time = (timestamp) ? timestamp : new Date();
-        return time.toISOString();
+}
+
+
+/***/ }),
+
+/***/ 3608:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "E": () => (/* binding */ DeltaCommand)
+/* harmony export */ });
+/* harmony import */ var date_fns_format__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(42168);
+/* harmony import */ var date_fns_format__WEBPACK_IMPORTED_MODULE_3___default = /*#__PURE__*/__nccwpck_require__.n(date_fns_format__WEBPACK_IMPORTED_MODULE_3__);
+/* harmony import */ var _core_dateUtils_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(75197);
+/* harmony import */ var _GenericCommand_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(20248);
+/* harmony import */ var _core_Delta_js__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(13989);
+
+
+
+
+class DeltaCommand extends _GenericCommand_js__WEBPACK_IMPORTED_MODULE_1__/* .GenericCommand */ .u {
+    constructor(program) {
+        const name = 'delta';
+        super(name, program);
+        this._program
+            .command(name)
+            .description('cve deltas (cve file changes)')
+            .option('--after <ISO timestamp>', 'show CVEs changed since <timestamp>, defaults to UTC midnight of today', `${_core_dateUtils_js__WEBPACK_IMPORTED_MODULE_2__/* .DateUtils.getMidnight */ .E.getMidnight().toISOString()}`)
+            // .option('--repository <path>', 'set repository, defaults to env var CVES_BASE_DIRECTORY', process.env.CVES_BASE_DIRECTORY)
+            .action(this.run);
+    }
+    async run(options) {
+        super.prerun(options);
+        console.log(`delta command called with ${JSON.stringify(options, null, 2)}`);
+        const timestamp = new Date();
+        const delta = await _core_Delta_js__WEBPACK_IMPORTED_MODULE_0__/* .Delta.newDeltaFromGitHistory */ .i.newDeltaFromGitHistory(options.after);
+        // console.log(`delta=${JSON.stringify(delta, null, 2)}`);
+        console.log(delta.toText());
+        const date = date_fns_format__WEBPACK_IMPORTED_MODULE_3___default()(timestamp, 'yyyy-MM-dd');
+        const time = date_fns_format__WEBPACK_IMPORTED_MODULE_3___default()(timestamp, 'HH');
+        const deltaFilename = `${date}_delta_CVEs_at_${time}00Z`;
+        delta.writeFile(`${deltaFilename}.json`);
+        delta.writeCves(null, `${deltaFilename}.zip`);
+        delta.writeTextFile(`release_notes.md`);
+        super.postrun(options);
     }
 }
 
@@ -65267,10 +67955,10 @@ class GithubCommand extends GenericCommand/* GenericCommand */.u {
 /* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
 /* harmony export */   "A": () => (/* binding */ RebuildCommand)
 /* harmony export */ });
+/* harmony import */ var _core_dateUtils_js__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(75197);
 /* harmony import */ var _GenericCommand_js__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(20248);
 /* harmony import */ var _CveService_js__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(24086);
-/* harmony import */ var _CveUpdater_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(14769);
-/* harmony import */ var _DateCommand_js__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(63537);
+/* harmony import */ var _CveUpdater_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(18080);
 /* harmony import */ var _core_Activity_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(68099);
 /* harmony import */ var _core_ActivityLog_js__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(51474);
 
@@ -65291,7 +67979,7 @@ class RebuildCommand extends _GenericCommand_js__WEBPACK_IMPORTED_MODULE_4__/* .
     async run(options) {
         super.prerun(options);
         super.timerReset();
-        const startIsoTime = _DateCommand_js__WEBPACK_IMPORTED_MODULE_5__/* .DateCommand.getIsoDate */ .d.getIsoDate();
+        const startIsoTime = _core_dateUtils_js__WEBPACK_IMPORTED_MODULE_5__/* .DateUtils.getIsoDate */ .E.getIsoDate();
         console.log(`rebuild started at ${startIsoTime}`);
         const cveService = new _CveService_js__WEBPACK_IMPORTED_MODULE_0__/* .CveService */ .o();
         const updater = new _CveUpdater_js__WEBPACK_IMPORTED_MODULE_1__/* .CveUpdater */ .pL(`rebuild command`, {
@@ -65310,7 +67998,7 @@ class RebuildCommand extends _GenericCommand_js__WEBPACK_IMPORTED_MODULE_4__/* .
         // if (Object.getOwnPropertyNames(notes).length > 0) {
         const activity = new _core_Activity_js__WEBPACK_IMPORTED_MODULE_2__/* .Activity */ .c({
             startTime: startIsoTime,
-            stopTime: _DateCommand_js__WEBPACK_IMPORTED_MODULE_5__/* .DateCommand.getIsoDate */ .d.getIsoDate(),
+            stopTime: _core_dateUtils_js__WEBPACK_IMPORTED_MODULE_5__/* .DateUtils.getIsoDate */ .E.getIsoDate(),
             duration,
             // type: `github`,
             name: `cves rebuild`,
@@ -65370,7 +68058,7 @@ class RebuildCommand extends _GenericCommand_js__WEBPACK_IMPORTED_MODULE_4__/* .
             activityLog.prepend(activity);
             activityLog.writeRecentFile();
         }
-        console.log(`opertion completed in ${super.timerSinceStart() / 1000 / 60} minutes at ${_DateCommand_js__WEBPACK_IMPORTED_MODULE_5__/* .DateCommand.getIsoDate */ .d.getIsoDate()}`);
+        console.log(`opertion completed in ${super.timerSinceStart() / 1000 / 60} minutes at ${_core_dateUtils_js__WEBPACK_IMPORTED_MODULE_5__/* .DateUtils.getIsoDate */ .E.getIsoDate()}`);
         super.postrun(options);
     }
 }
@@ -65378,99 +68066,21 @@ class RebuildCommand extends _GenericCommand_js__WEBPACK_IMPORTED_MODULE_4__/* .
 
 /***/ }),
 
-/***/ 62171:
+/***/ 13272:
 /***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
 
-
-// EXPORTS
-__nccwpck_require__.d(__webpack_exports__, {
-  "z": () => (/* binding */ UpdateCommand)
-});
-
-// EXTERNAL MODULE: ./node_modules/date-fns/sub/index.js
-var sub = __nccwpck_require__(63875);
-var sub_default = /*#__PURE__*/__nccwpck_require__.n(sub);
-// EXTERNAL MODULE: ./src/commands/GenericCommand.ts
-var GenericCommand = __nccwpck_require__(20248);
-// EXTERNAL MODULE: ./src/CveService.ts + 1 modules
-var CveService = __nccwpck_require__(24086);
-// EXTERNAL MODULE: ./src/CveUpdater.ts + 2 modules
-var CveUpdater = __nccwpck_require__(14769);
-// EXTERNAL MODULE: ./src/commands/DateCommand.ts
-var DateCommand = __nccwpck_require__(63537);
-// EXTERNAL MODULE: ./src/core/ActivityLog.ts
-var ActivityLog = __nccwpck_require__(51474);
-// EXTERNAL MODULE: ./node_modules/simple-git/dist/esm/index.js
-var esm = __nccwpck_require__(92628);
-;// CONCATENATED MODULE: ./src/core/git.ts
-/** a wrapper/fascade class to make it easier to use git libraries from within cve utils */
-
-class Git {
-    localDir; // must be an existing directory
-    git;
-    /** constructor
-     * @param init initializer
-     */
-    constructor(init = undefined) {
-        this.localDir = init?.localDir ? init.localDir : `${process.cwd()}`;
-        console.log(`git working directory set to ${this.localDir}`);
-        this.git = (0,esm/* simpleGit */.o5)(this.localDir, { binary: 'git' });
-        this.git.cwd(this.localDir);
-    }
-    /** returns git status in a promise
-     *  Note that while StatusResult shows files with paths relative to pwd, working
-     *  with those files (for example, add or rm) requires a full path
-    */
-    async status() {
-        const status = await this.git.status();
-        // console.log(`status=${JSON.stringify(status, null, 2)}`);
-        return status;
-    }
-    // generic error callback
-    static genericCallback(err) {
-        if (err) {
-            throw err;
-            console.log(`git error:  ${err}`);
-        }
-        ;
-    }
-    /** git add files
-     *  Note that fullPathFiles must be either full path specs or partial paths from this.localDir
-     *  Note that fullPathFiles should NOT be a directory
-     *
-    */
-    async add(fullPathFiles) {
-        console.log(`adding ${JSON.stringify(fullPathFiles)}`);
-        const retval = this.git.add(fullPathFiles, Git.genericCallback);
-        return retval;
-    }
-    /** git rm files
-     *  Note that fullPathFiles must be either full path specs or partial paths from this.localDir
-     *  Note that fullPathFiles should NOT be a directory
-    */
-    async rm(fullPathFiles) {
-        const retval = this.git.rm(fullPathFiles, Git.genericCallback);
-        return retval;
-    }
-    // // see https://github.com/steveukx/git-js/blob/main/simple-git/test/unit/fetch.spec.ts for examples
-    // async fetch(): Promise<Response<FetchResult>> {
-    //   const retval = this.git.fetch(Git.genericCallback)
-    //   return retval
-    // }
-    // @todo:  implement pull
-    /**
-     * commits staged files
-     * @param msg commit message
-     * @returns CommitResult
-     *
-     */
-    async commit(msg) {
-        const retval = this.git.commit(msg, Git.genericCallback);
-        return retval;
-    }
-}
-
-;// CONCATENATED MODULE: ./src/commands/UpdateCommand.ts
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "z": () => (/* binding */ UpdateCommand)
+/* harmony export */ });
+/* harmony import */ var date_fns_sub__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(63875);
+/* harmony import */ var date_fns_sub__WEBPACK_IMPORTED_MODULE_7___default = /*#__PURE__*/__nccwpck_require__.n(date_fns_sub__WEBPACK_IMPORTED_MODULE_7__);
+/* harmony import */ var _core_dateUtils_js__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(75197);
+/* harmony import */ var _GenericCommand_js__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(20248);
+/* harmony import */ var _CveService_js__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(24086);
+/* harmony import */ var _CveUpdater_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(18080);
+/* harmony import */ var _core_Delta_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(13989);
+/* harmony import */ var _core_ActivityLog_js__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(51474);
+/* harmony import */ var _core_git_js__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(57445);
 
 
 
@@ -65478,7 +68088,8 @@ class Git {
 
 
 
-class UpdateCommand extends GenericCommand/* GenericCommand */.u {
+
+class UpdateCommand extends _GenericCommand_js__WEBPACK_IMPORTED_MODULE_5__/* .GenericCommand */ .u {
     /** default number of minutes to look back when a start date is not specified */
     static defaultMins = parseInt(process.env.CVES_DEFAULT_UPDATE_LOOKBACK_IN_MINS || "180");
     constructor(program) {
@@ -65486,7 +68097,6 @@ class UpdateCommand extends GenericCommand/* GenericCommand */.u {
         const timestamp = new Date();
         this._program.command('update')
             .description('update CVEs using CVE Services')
-            .option('--log-always', 'write logs even if no net changes', false)
             .option('--log-keep-previous', 'keeps previous run instead of clearing it first', false)
             .option('--logfile <string>', 'activies log filename', `${process.env.CVES_RECENT_ACTIVITIES_FILENAME}`)
             .option('--minutes-ago <number>', `start window at <number> of minutes ago (default behavior)`, `${UpdateCommand.defaultMins}`)
@@ -65494,7 +68104,7 @@ class UpdateCommand extends GenericCommand/* GenericCommand */.u {
             .option('--start <ISO string>', `specific start window, overrides any specifications from --minutes-ago`)
             .option('--stop <ISO string>', 'stop window, defaults to now', timestamp.toISOString())
             .option('--url <url>', 'source serve url', process.env.CVE_SERVICES_URL)
-            .option('--baseline', 'run this update as a new baseline')
+            .option('--baseline-date <ISO string>', 'set baseline date from which to build deltas', _core_dateUtils_js__WEBPACK_IMPORTED_MODULE_6__/* .DateUtils.getMidnight */ .E.getMidnight().toISOString())
             .action(this.run);
         this.timerReset();
     }
@@ -65506,7 +68116,7 @@ class UpdateCommand extends GenericCommand/* GenericCommand */.u {
             console.log(`ignoring minutes-ago (${newOptions.minutesAgo}), starting window is set to ${newOptions.start}`);
         }
         else {
-            newOptions.start = sub_default()(new Date(now), { minutes: minutesAgo }).toISOString();
+            newOptions.start = date_fns_sub__WEBPACK_IMPORTED_MODULE_7___default()(new Date(now), { minutes: minutesAgo }).toISOString();
             console.log(`starting window calculated from default --minutes-ago (${minutesAgo}): ${newOptions.start}`);
         }
         return newOptions;
@@ -65515,16 +68125,31 @@ class UpdateCommand extends GenericCommand/* GenericCommand */.u {
     async run(options) {
         super.prerun(options);
         super.timerReset();
-        console.log(`update started at ${DateCommand/* DateCommand.getIsoDate */.d.getIsoDate()}`);
-        const cveService = new CveService/* CveService */.o();
-        const updater = new CveUpdater/* CveUpdater */.pL(`update command`, {
+        console.log(`update started at ${_core_dateUtils_js__WEBPACK_IMPORTED_MODULE_6__/* .DateUtils.getIsoDate */ .E.getIsoDate()}`);
+        const cveService = new _CveService_js__WEBPACK_IMPORTED_MODULE_0__/* .CveService */ .o();
+        const updater = new _CveUpdater_js__WEBPACK_IMPORTED_MODULE_1__/* .CveUpdater */ .pL(`update command`, {
+            path: options.output,
+            filename: options.logfile,
+            logAlways: options.logAlways,
+            logKeepPrevious: true
+        });
+        const newOptions = UpdateCommand.determineQueryTimeOptions(options, _core_dateUtils_js__WEBPACK_IMPORTED_MODULE_6__/* .DateUtils.getIsoDate */ .E.getIsoDate());
+        const activityLog = new _core_ActivityLog_js__WEBPACK_IMPORTED_MODULE_3__/* .ActivityLog */ .D({
             path: options.output,
             filename: options.logfile,
             logAlways: options.logAlways,
             logKeepPrevious: true
         });
         // ----- determine setup window from params
-        const newOptions = UpdateCommand.determineQueryTimeOptions(options, DateCommand/* DateCommand.getIsoDate */.d.getIsoDate());
+        // not needed --- using a new github action instead
+        // // ----- make baseline.zip if requested or just after midnight
+        // const mostRecentActivity = activityLog.getMostRecentActivity();
+        // const timestampIso = mostRecentActivity?.startTime;
+        // const nowDateIso = formatISO(new Date(), { representation: 'date' });
+        // const dateIso = timestampIso.substring(0, timestampIso.indexOf('T'));
+        // if (options.makeBaseline || dateIso < nowDateIso) {
+        //   console.log("need to make new baseline");
+        // }
         // ----- update by window
         const args = process.argv;
         // const countResp = await cveService.cve({ queryString: `count_only=1` });
@@ -65537,16 +68162,17 @@ class UpdateCommand extends GenericCommand/* GenericCommand */.u {
             // log activity
             if (options.logAlways || activity?.delta?.numberOfChanges > 0) {
                 // console.log(`will write recent activities`)
-                const activityLog = new ActivityLog/* ActivityLog */.D({
-                    path: options.output,
-                    filename: options.logfile,
-                    logAlways: options.logAlways,
-                    logKeepPrevious: true
-                });
                 activityLog.prepend(activity);
                 activityLog.writeRecentFile();
+                // write delta file
+                const delta2 = await _core_Delta_js__WEBPACK_IMPORTED_MODULE_2__/* .Delta.newDeltaFromGitHistory */ .i.newDeltaFromGitHistory(options.baselineDate, null, process.env.CVES_BASE_DIRECTORY);
+                // console.log(`delta=${JSON.stringify(delta, null, 2)}`);
+                console.log(delta2.toText());
+                // delta2.writeFile();
+                delta2.writeCves();
+                delta2.writeTextFile('release_notes.md');
                 const localDir = `${process.cwd()}/${process.env.CVES_BASE_DIRECTORY}`;
-                const git = new Git({ localDir: `${process.cwd()}` });
+                const git = new _core_git_js__WEBPACK_IMPORTED_MODULE_4__/* .Git */ .H({ localDir: `${process.cwd()}` });
                 // const status = await git.status();
                 // status.files = [];
                 // console.log(`status = ${JSON.stringify(status, null, 2)}`);
@@ -65571,7 +68197,7 @@ class UpdateCommand extends GenericCommand/* GenericCommand */.u {
         else {
             console.log(`no new or updated CVEs`);
         }
-        console.log(`opertion completed in ${super.timerSinceStart() / 1000} seconds at ${DateCommand/* DateCommand.getIsoDate */.d.getIsoDate()}`);
+        console.log(`opertion completed in ${super.timerSinceStart() / 1000} seconds at ${_core_dateUtils_js__WEBPACK_IMPORTED_MODULE_6__/* .DateUtils.getIsoDate */ .E.getIsoDate()}`);
         super.postrun(newOptions);
     }
 }
@@ -65588,7 +68214,7 @@ class UpdateCommand extends GenericCommand/* GenericCommand */.u {
 /* harmony export */ });
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(90250);
 /* harmony import */ var lodash__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(lodash__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var _commands_DateCommand_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(63537);
+/* harmony import */ var _dateUtils_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(75197);
 /**
  *  Activity object
  *  This is the main object in an ActivityLog file
@@ -65604,7 +68230,7 @@ var ActivityStatus;
     ActivityStatus["Failed"] = "failed";
 })(ActivityStatus = ActivityStatus || (ActivityStatus = {}));
 class Activity {
-    startTime = _commands_DateCommand_js__WEBPACK_IMPORTED_MODULE_1__/* .DateCommand.getIsoDate */ .d.getIsoDate();
+    startTime = _dateUtils_js__WEBPACK_IMPORTED_MODULE_1__/* .DateUtils.getIsoDate */ .E.getIsoDate();
     stopTime = "?";
     duration = "?";
     // type: `github` | `manual`,
@@ -65688,7 +68314,17 @@ class ActivityLog {
     clearActivities() {
         this._activities = [];
     }
-    // prepends activity to activities
+    /**
+     * @returns the most recent activity object
+     */
+    getMostRecentActivity() {
+        return this._activities[0];
+    }
+    /**
+     * prepends activity to activities
+     * @param activity the activity object to prepend
+     * @returns the current list of activities, after prepending
+     */
     prepend(activity) {
         // console.log(`options=`, this._options);
         if (this._options.logAlways || activity?.steps.length > 0) {
@@ -65731,6 +68367,732 @@ class ActivityLog {
 
 /***/ }),
 
+/***/ 23532:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "PG": () => (/* binding */ CveCore),
+/* harmony export */   "aZ": () => (/* reexport safe */ _CveId_js__WEBPACK_IMPORTED_MODULE_0__.a)
+/* harmony export */ });
+/* harmony import */ var _CveId_js__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(60672);
+/**
+ *  CveCore is made up of mostly the metadata portion of a CVE JSON 5 object
+ *    plus (eventually) of additional metadata (such as SHA) that is useful for managing/validating CVEs
+ */
+
+
+// export type CveId = string;
+class CveCore {
+    cveId;
+    state; //"RESERVED" | "PUBLISHED" | "REJECTED";
+    assignerOrgId;
+    assignerShortName;
+    dateReserved;
+    datePublished;
+    dateUpdated;
+    // sha?:string  // this will hold a SHA of the actual CVE itself
+    // constructors and factories
+    constructor(cveId) {
+        this.cveId = (cveId instanceof _CveId_js__WEBPACK_IMPORTED_MODULE_0__/* .CveId */ .a) ? cveId : new _CveId_js__WEBPACK_IMPORTED_MODULE_0__/* .CveId */ .a(cveId);
+    }
+    static fromCveMetadata(metadata) {
+        let obj = new CveCore(metadata?.cveId);
+        obj.state = metadata?.state;
+        obj.assignerOrgId = metadata?.assignerOrgId;
+        obj.assignerShortName = metadata?.assignerShortName;
+        obj.dateReserved = metadata?.dateReserved;
+        obj.datePublished = metadata?.datePublished;
+        // obj.dateUpdated = metadata?.dateUpdated;
+        return obj;
+    }
+    /**
+     * returns the CveId from a full or partial path (assuming the file is in the repository directory)
+     *  @param path the full or partial file path to CVE JSON file
+     *  @returns the CveId calculated from the filename, or "" if not valid
+     */
+    static getCveIdfromRepositoryFilePath(path) {
+        if (path) {
+            return path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+        }
+        else {
+            return '';
+        }
+    }
+    /**
+     * returns the CveId from a full or partial path (assuming the file is in the repository directory)
+     *  @param path the full or partial file path to CVE JSON file
+     *  @returns the CveId calculated from the filename
+     */
+    static fromRepositoryFilePath(path) {
+        try {
+            return new CveCore(CveCore.getCveIdfromRepositoryFilePath(path));
+        }
+        catch {
+            throw new _CveId_js__WEBPACK_IMPORTED_MODULE_0__/* .CveIdError */ .M(`Error in parsing repository file path:  ${path}`);
+        }
+    }
+    static fromCve(cve) {
+        return this.fromCveMetadata(cve.cveMetadata);
+    }
+    toJson(whitespace = 2) {
+        return JSON.stringify(this, (k, v) => v ?? undefined, whitespace);
+    }
+    getCvePath() {
+        return this.cveId.getCvePath();
+    }
+}
+
+
+/***/ }),
+
+/***/ 60672:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "M": () => (/* binding */ CveIdError),
+/* harmony export */   "a": () => (/* binding */ CveId)
+/* harmony export */ });
+/* harmony import */ var process__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(77282);
+/* harmony import */ var process__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(process__WEBPACK_IMPORTED_MODULE_0__);
+/**
+ *  CveId is an object that represents a CVE ID and provides
+ *  helper functions to use it
+ */
+
+class CveIdError extends Error {
+}
+class CveId {
+    /** internal representation of the CVE ID */
+    id;
+    // constructors and factories
+    /**
+     * @param id a string representing a CVE ID (e.g., CVE-1999-0001)
+     * @throws CveIdError if id is not a valid CVE ID
+     */
+    constructor(id) {
+        if (CveId.toCvePath(id)) {
+            this.id = (id instanceof CveId) ? id.id : id;
+        }
+    }
+    toJSON() {
+        return this.id;
+    }
+    /**
+     * returns the partial CVE Path based on the CVE ID
+     * @returns the partial CVE path, e.g., 1999/0xxx/CVE-1999-0001
+     */
+    getCvePath() {
+        return CveId.toCvePath(this.id);
+    }
+    /**
+     * returns the full CVE Path based on the CVEID and pwd
+     * @returns the full CVE Path, e.g., /user/cve/cves/1999/0xxx/CVE-1999-0001
+     */
+    getFullCvePath() {
+        return `${process__WEBPACK_IMPORTED_MODULE_0___default().cwd()}/${(process__WEBPACK_IMPORTED_MODULE_0___default().env.CVES_BASE_DIRECTORY)}/${CveId.toCvePath(this.id)}`;
+    }
+    // ----- static functions ----- ----- ----- -----
+    /**
+     * checks if a string is a valid CveID
+     *  @param str a string to test for CveID validity
+     *  @returns true iff str is a valid CveID
+     */
+    static isValidCveId(str) {
+        try {
+            if (str === undefined || !str.startsWith('CVE')) {
+                return false;
+            }
+            console.log(`str=${str}`);
+            const cvePath = CveId.toCvePath(str);
+            return true;
+        }
+        catch (err) {
+            return false;
+        }
+    }
+    /** returns an array of CVE years represented as numbers [1999...2024] */
+    static getAllYears() {
+        // @todo should use generator
+        // const startYear = 1999;
+        // const endYear = 2024;
+        // return [...Array(endYear - startYear + 1).keys()].map(i => i + startYear);
+        return [
+            1970,
+            1999, 2000, 2001, 2002, 2003,
+            2004, 2005, 2006, 2007, 2008,
+            2009, 2010, 2011, 2012, 2013,
+            2014, 2015, 2016, 2017, 2018,
+            2019, 2020, 2021, 2022, 2023,
+            2024, 2025
+        ];
+    }
+    /** given a cveId, returns the git hub repository partial directory it should go into
+     *  @param cveId string representing the CVE ID (e.g., CVE-1999-0001)
+     *  @returns string representing the partial path the cve belongs in (e.g., /1999/1xxx)
+    */
+    static getCveDir(cveId) {
+        let id = (cveId instanceof CveId) ? cveId.id : cveId;
+        id = (id) ? id : '';
+        const parts = id.split('-');
+        const year = parseInt(parts[1]);
+        const num = parseInt(parts[2]);
+        if (parts[0] === 'CVE'
+            && CveId.getAllYears().includes(year)
+            && num >= 1) {
+            parts.shift(); // removes the 'CVE'
+            const thousands = Math.floor(num / 1000).toFixed(0);
+            return `${parts[0]}/${thousands}xxx`;
+        }
+        else {
+            throw new CveIdError(`Error in CVE ID:  ${cveId}`);
+        }
+    }
+    /** given a cveId, returns the git hub repository partial path (directory and filename without extension) it should go into
+     *  @param cveId string representing the CVE ID (e.g., CVE-1999-0001)
+     *  @returns string representing the partial path the cve belongs in (e.g., /1999/1xxx/CVE-1999-0001)
+    */
+    static toCvePath(cveId) {
+        const id = (cveId instanceof CveId) ? cveId.id : cveId;
+        const dir = CveId.getCveDir(cveId);
+        return `${dir}/${id}`;
+    }
+}
+
+
+/***/ }),
+
+/***/ 13989:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+
+// EXPORTS
+__nccwpck_require__.d(__webpack_exports__, {
+  "i": () => (/* binding */ Delta),
+  "v": () => (/* binding */ DeltaQueue)
+});
+
+// EXTERNAL MODULE: external "fs"
+var external_fs_ = __nccwpck_require__(57147);
+var external_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_fs_);
+// EXTERNAL MODULE: external "path"
+var external_path_ = __nccwpck_require__(71017);
+var external_path_default = /*#__PURE__*/__nccwpck_require__.n(external_path_);
+// EXTERNAL MODULE: external "process"
+var external_process_ = __nccwpck_require__(77282);
+var external_process_default = /*#__PURE__*/__nccwpck_require__.n(external_process_);
+// EXTERNAL MODULE: ./node_modules/simple-git/dist/esm/index.js
+var esm = __nccwpck_require__(92628);
+// EXTERNAL MODULE: ./node_modules/lodash/lodash.js
+var lodash = __nccwpck_require__(90250);
+// EXTERNAL MODULE: ./src/core/CveCore.ts
+var CveCore = __nccwpck_require__(23532);
+// EXTERNAL MODULE: ./src/Cve.ts
+var Cve = __nccwpck_require__(99081);
+// EXTERNAL MODULE: ./src/core/git.ts
+var core_git = __nccwpck_require__(57445);
+// EXTERNAL MODULE: ./node_modules/adm-zip/adm-zip.js
+var adm_zip = __nccwpck_require__(66761);
+var adm_zip_default = /*#__PURE__*/__nccwpck_require__.n(adm_zip);
+;// CONCATENATED MODULE: ./src/core/fsUtils.ts
+/** a wrapper/fascade class to make it easier to work with the file system */
+
+
+class FsUtils {
+    path;
+    // /** constructor
+    //  * @param path initializes a path
+    //  */
+    constructor(path) {
+        this.path = path;
+    }
+    static ls(path) {
+        const retval = [];
+        external_fs_default().readdirSync(path).forEach(file => {
+            // console.log(file);
+            retval.push(file);
+        });
+        return retval;
+    }
+    /**
+     * Synchronously generate a zip file from an array of files (no directories)
+     * @param filepaths array of filenames to be zipped
+     * @param resultFilepath filename for resulting zip file
+     * @param zipVirtualDir dir name in zip, defaults to `files`
+     *                      (for example, if you want to add all the files
+     *                       into a zip folder called abc,
+     *                        you would pass 'abc' here)
+     * @param dir path to directory where files are located
+     */
+    static generateZipfile(filepaths, resultFilepath, zipVirtualDir = `files`, dir = '') {
+        console.log(`generating zip file from ${filepaths} to ${resultFilepath}`);
+        const zip = new (adm_zip_default());
+        if (!Array.isArray(filepaths)) {
+            filepaths = [filepaths];
+        }
+        filepaths.forEach(filepath => {
+            const path = (dir.length > 0) ? `${dir}/${filepath}` : filepath;
+            zip.addLocalFile(path, zipVirtualDir);
+        });
+        zip.writeZip(resultFilepath);
+        // console.log(`zip file generated at ${resultFilepath}`);
+    }
+}
+
+;// CONCATENATED MODULE: ./src/core/Delta.ts
+/**
+ *  Delta object, calculates deltas in activities
+ */
+
+
+
+
+
+
+
+
+
+// export type CveId = string;   // @todo make a better class
+var DeltaQueue;
+(function (DeltaQueue) {
+    DeltaQueue[DeltaQueue["kNew"] = 1] = "kNew";
+    DeltaQueue[DeltaQueue["kPublished"] = 2] = "kPublished";
+    DeltaQueue[DeltaQueue["kUpdated"] = 3] = "kUpdated";
+    DeltaQueue[DeltaQueue["kUnknown"] = 4] = "kUnknown";
+})(DeltaQueue = DeltaQueue || (DeltaQueue = {}));
+class Delta /*implements DeltaProps*/ {
+    numberOfChanges = 0;
+    // published: CveCore[] = [];
+    new = [];
+    updated = [];
+    unknown = [];
+    /** constructor
+     *  @param prevDelta a previous delta to intialize this object, essentially appending new
+     *                   deltas to the privous ones (default is none)
+     */
+    constructor(prevDelta = null) {
+        // update with previous delta, if any
+        if (prevDelta) {
+            this.numberOfChanges = prevDelta?.numberOfChanges ?? 0;
+            this.new = prevDelta?.new ? (0,lodash.cloneDeep)(prevDelta.new) : [];
+            // this.published = prevDelta?.published ? cloneDeep(prevDelta.published) : [];
+            this.updated = prevDelta?.updated ? (0,lodash.cloneDeep)(prevDelta.updated) : [];
+        }
+    }
+    // ----- factory functions ----- ----- 
+    /**
+     * Factory that generates a new Delta from git log based on a time window
+     * @param start git log start time window
+     * @param stop git log stop time window (defaults to now)
+     */
+    static async newDeltaFromGitHistory(start, stop = null, repository = null) {
+        stop = (stop) ? stop : new Date().toISOString();
+        const localDir = repository ? repository : (external_process_default()).env.CVES_BASE_DIRECTORY;
+        console.log(`building new delta of ${localDir} from ${start} to ${stop}`);
+        const git = new core_git/* Git */.H({ localDir });
+        const delta = await git.logDeltasInTimeWindow(start, stop);
+        // files.forEach(element => {
+        //   const tuple = Delta.getCveIdMetaData(element);
+        //   delta.add(new CveCore(tuple[0]), DeltaQueue.kUnknown);
+        // });
+        return delta;
+    }
+    // ----- static functions ----- ----- 
+    /** returns useful metadata given a repository filespec:
+     *   - its CVE ID (for example, CVE-1970-0001)
+     *   - its partial path in the repository (for example, ./abc/def/CVE-1970-0001)
+     *  @param path a full or partial filespec (for example, ./abc/def/CVE-1970-0001.json)
+     *  @todo should be in a separate CveId or Cve class
+     */
+    static getCveIdMetaData(path) {
+        try {
+            const cveId = path.substring(path.lastIndexOf('/') + 1, path.lastIndexOf('.'));
+            const cveIdPath = `${Cve/* Cve.toCvePath */.DW.toCvePath(cveId)}`;
+            return [cveId, cveIdPath];
+        }
+        catch (ex) {
+            // not a CVE, ignore and just return
+            return [undefined, undefined];
+        }
+    }
+    /** calculates the delta filtering using the specified directory
+     *  @param prevDelta the previous delta
+     *  @param dir directory to filter (note that this cannot have `./` or `../` since this is only doing a simple string match)
+     */
+    static async calculateDelta(prevDelta, dir) {
+        // console.log(`calcuating delta in dir=${dir}`);
+        const delta = new Delta(prevDelta);
+        const git = (0,esm/* simpleGit */.o5)('./', { binary: 'git' });
+        const status = await git.status();
+        // console.log(`status = ${JSON.stringify(status, null, 2)}`);
+        const notAddedList = status.not_added.filter(item => item.startsWith(dir));
+        const modifiedList = status.modified.filter(item => item.startsWith(dir));
+        notAddedList.forEach(item => {
+            const cveId = Delta.getCveIdMetaData(item)[0];
+            if (cveId) {
+                delta.add(new CveCore/* CveCore */.PG(cveId), DeltaQueue.kNew);
+            }
+        });
+        modifiedList.forEach(item => {
+            const cveId = Delta.getCveIdMetaData(item)[0];
+            if (cveId) {
+                delta.add(new CveCore/* CveCore */.PG(cveId), DeltaQueue.kUpdated);
+            }
+        });
+        // console.log(`delta = ${JSON.stringify(delta, null, 2)}`);
+        return delta;
+    }
+    // ----- private functions ----- -----
+    /**
+     * pure function:  given origQueue, this will either add cve if it is not already in origQueue
+     * or replace the original in origQueue with cve
+     * @param cve the CVE to be added/replaced
+     * @param origQueue the original queue
+     * @returns a typle:
+     *    [0] is the new queue (with the CVE either added or replace older)
+     *    [1] either 0 if CVE is replaced, or 1 if new, intended to be += to this.numberOfChanges (deprecated)
+     */
+    _addOrReplace(cve, origQueue) {
+        const i = (0,lodash.findIndex)(origQueue, item => item.cveId.id == cve.cveId.id);
+        if (i < 0) {
+            return [[...origQueue, cve], 1];
+        }
+        else {
+            // otherwise remove the original and add the new since it is more updated
+            const newQueue = [...origQueue];
+            newQueue[i] = cve;
+            return [newQueue, 0];
+        }
+    }
+    /** calculates the numberOfChanges property
+     * @returns the total number of deltas in all the queues
+     */
+    calculateNumDelta() {
+        return this.new.length
+            // + this.published.length
+            + this.updated.length
+            + this.unknown.length;
+    }
+    /** adds a cveCore object into one of the queues in a delta object
+     *  @param cve a CveCore object to be added
+     *  @param queue the DeltaQueue enum specifying which queue to add to
+     */
+    add(cve, queue) {
+        let tuple;
+        switch (queue) {
+            case DeltaQueue.kNew:
+                tuple = this._addOrReplace(cve, this.new);
+                // this.numberOfChanges += tuple[1];
+                this.new = tuple[0];
+                break;
+            // case DeltaQueue.kPublished:
+            //   tuple = this._addOrReplace(cve, this.published);
+            //   this.published = tuple[0];
+            //   break;
+            case DeltaQueue.kUpdated:
+                tuple = this._addOrReplace(cve, this.updated);
+                this.updated = tuple[0];
+                break;
+            default:
+                if (cve.cveId) {
+                    console.log(`pushing into unknown:  ${JSON.stringify(cve)}`);
+                    this.unknown.push(cve);
+                }
+                else {
+                    console.log(`ignoring cve=${JSON.stringify(cve)}`);
+                }
+                break;
+        }
+        this.numberOfChanges = this.calculateNumDelta();
+    }
+    /** summarize the information in this Delta object in human-readable form */
+    toText() {
+        const newCves = [];
+        this.new.forEach(item => newCves.push(item.cveId.id));
+        const updatedCves = [];
+        this.updated.forEach(item => updatedCves.push(item.cveId.id));
+        const unkownFiles = [];
+        this.unknown.forEach(item => unkownFiles.push(item.cveId.id));
+        let s = `${this.new.length} new | ${this.updated.length} updated`;
+        if (this.unknown.length > 0) {
+            s += ` | ${this.unknown.length} other files`;
+        }
+        const retstr = `${this.numberOfChanges} changes (${s}):
+      - ${this.new.length} new CVEs:  ${newCves.join(', ')}
+      - ${this.updated.length} updated CVEs: ${updatedCves.join(', ')}
+      ${this.unknown.length > 0 ? `- ${this.unknown.length} other files: ${unkownFiles.join(', ')}` : ``}
+    `;
+        return retstr;
+    }
+    // ----- ----- Output to files
+    /** writes the delta to a JSON file
+     *  @param relFilepath relative path from current directory
+    */
+    writeFile(relFilepath = null) {
+        relFilepath = relFilepath ? relFilepath : `${(external_process_default()).env.CVES_BASE_DIRECTORY}/delta.json`;
+        // console.log(`relFilepath=${relFilepath}`);
+        const dirname = external_path_default().dirname(relFilepath);
+        external_fs_default().mkdirSync(dirname, { recursive: true });
+        external_fs_default().writeFileSync(`${relFilepath}`, JSON.stringify(this, null, 2));
+        console.log(`delta file written to ${relFilepath}`);
+    }
+    /**
+     * Copies delta CVEs to a specified directory, and optionally zip the resulting directory
+     * @param relDir optional relative path from current directory to write the delta CVEs, default is `deltas` directory
+     * @param zipFile optional relative path from the current directory to write the zip file, default is NOT to write to zip
+     */
+    writeCves(relDir = null, zipFile = null) {
+        const pwd = external_process_default().cwd();
+        relDir = relDir ? relDir : `${pwd}/deltas`;
+        external_fs_default().mkdirSync(relDir, { recursive: true });
+        console.log(`copying changed CVEs to ${relDir}`);
+        this.new.forEach(item => {
+            const cveid = new CveCore/* CveId */.aZ(item.cveId);
+            const cvePath = cveid.getFullCvePath();
+            console.log(`  ${item.cveId.id} (new)`);
+            external_fs_default().copyFileSync(`${cvePath}.json`, `${relDir}/${item.cveId.id}.json`);
+        });
+        this.updated.forEach(item => {
+            const cveid = new CveCore/* CveId */.aZ(item.cveId);
+            const cvePath = cveid.getFullCvePath();
+            console.log(`  ${item.cveId.id} (updated)`);
+            external_fs_default().copyFileSync(`${cvePath}.json`, `${relDir}/${item.cveId.id}.json`);
+        });
+        console.log(`${this.numberOfChanges} CVEs copied to ${relDir}`);
+        if (zipFile) {
+            const listing = FsUtils.ls(relDir);
+            FsUtils.generateZipfile(listing, zipFile, "deltaCves", relDir);
+            console.log(`zip file generated as ${relDir}/${zipFile}`);
+        }
+    }
+    writeTextFile(relFilepath = null) {
+        relFilepath = relFilepath ? relFilepath : 'delta.md';
+        let text = this.toText();
+        if (text.length === 0) {
+            text = "no files were changed";
+        }
+        external_fs_default().writeFileSync(relFilepath, text);
+    }
+}
+
+
+/***/ }),
+
+/***/ 75197:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "E": () => (/* binding */ DateUtils)
+/* harmony export */ });
+/**
+ * Utility class to facilitate dates in Javascript, standardizing all dates to
+ *  ISO format:  2023-03-25T00:00:00.000Z
+ */
+class DateUtils {
+    /**
+     * @param timestamp a Date timestamp object, defaults to current timestamp
+     * @returns the current date in ISO format
+     */
+    static getIsoDate(timestamp = null) {
+        const time = (timestamp) ? timestamp : new Date();
+        return time.toISOString();
+    }
+    /**
+     * gets the date and time portions of a Date object as a tuple, defaults to current timestamp
+     * @param date the Date object
+     * @returns date portion of date as a string
+     */
+    static dateComponents(date = null) {
+        const isoStr = date.toISOString();
+        return [
+            isoStr.substring(0, isoStr.indexOf('T')),
+            isoStr.substring(isoStr.indexOf('T') + 1),
+            isoStr.substring(isoStr.indexOf('T') + 1, isoStr.indexOf(':')),
+        ];
+    }
+    /**
+     * gets the date portion of a Date object as a string, defaults to current timestamp
+     * @param date the Date object
+     * @returns date portion of date as a string
+     */
+    static dateStringFromDate(date = null) {
+        const isoStr = date.toISOString();
+        return isoStr.substring(0, isoStr.indexOf('T'));
+    }
+    /**
+     * returns today's midnight (i.e., today's date with hours all set to 0)
+     */
+    static getMidnight() {
+        let midnight = new Date();
+        midnight.setUTCHours(0, 0, 0, 0);
+        return midnight;
+    }
+}
+
+
+/***/ }),
+
+/***/ 57445:
+/***/ ((__unused_webpack_module, __webpack_exports__, __nccwpck_require__) => {
+
+/* harmony export */ __nccwpck_require__.d(__webpack_exports__, {
+/* harmony export */   "H": () => (/* binding */ Git)
+/* harmony export */ });
+/* harmony import */ var simple_git__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(92628);
+/* harmony import */ var _CveCore_js__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(23532);
+/* harmony import */ var _Delta_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(13989);
+/** a wrapper/fascade class to make it easier to use git libraries from within cve utils */
+
+
+
+class Git {
+    // fullOriginUrl: string;  // full URL with tokens and/or username/passwords
+    localDir; // must be an existing directory
+    git;
+    // other credentials are in GH_XXXXX environment variables
+    /** constructor
+     * @param init initializer
+     */
+    constructor(init = undefined) {
+        // this.fullOriginUrl = init?.fullOriginUrl ? init.fullOriginUrl : `https://${process.env.GH_TOKEN}@github.com/${process.env.GH_OWNER}/${process.env.GH_REPO}.git`;
+        this.localDir = init?.localDir ? init.localDir : `${process.cwd()}`;
+        console.log(`git working directory set to ${this.localDir}`);
+        this.git = (0,simple_git__WEBPACK_IMPORTED_MODULE_0__/* .simpleGit */ .o5)(this.localDir, { binary: 'git' });
+        this.git.cwd(this.localDir);
+    }
+    /** returns git status in a promise
+     *  Note that while StatusResult shows files with paths relative to pwd, working
+     *  with those files (for example, add or rm) requires a full path
+    */
+    async status() {
+        const status = await this.git.status();
+        // console.log(`status=${JSON.stringify(status, null, 2)}`);
+        return status;
+    }
+    // generic error callback
+    static genericCallback(err) {
+        if (err) {
+            throw err;
+            console.log(`git error:  ${err}`);
+        }
+        ;
+    }
+    /** git add files
+     *  Note that fullPathFiles must be either full path specs or partial paths from this.localDir
+     *  Note that fullPathFiles should NOT be a directory
+     *
+    */
+    async add(fullPathFiles) {
+        console.log(`adding ${JSON.stringify(fullPathFiles)}`);
+        const retval = this.git.add(fullPathFiles, Git.genericCallback);
+        return retval;
+    }
+    /** git rm files
+     *  Note that fullPathFiles must be either full path specs or partial paths from this.localDir
+     *  Note that fullPathFiles should NOT be a directory
+    */
+    async rm(fullPathFiles) {
+        const retval = this.git.rm(fullPathFiles, Git.genericCallback);
+        return retval;
+    }
+    // // see https://github.com/steveukx/git-js/blob/main/simple-git/test/unit/fetch.spec.ts for examples
+    // async fetch(): Promise<Response<FetchResult>> {
+    //   const retval = this.git.fetch(Git.genericCallback)
+    //   return retval
+    // }
+    // @todo:  implement pull
+    /**
+     * commits staged files
+     * @param msg commit message
+     * @returns CommitResult
+     *
+     */
+    async commit(msg) {
+        const retval = this.git.commit(msg, Git.genericCallback);
+        return retval;
+    }
+    /**
+     *  logs commit hash and date between time window
+     */
+    async logCommitHashInWindow(start, stop) {
+        // console.log(`logCommitHashInWindow(${start},${stop})`);
+        const response = await this.git.raw('log', `--after="${start}"`, `--before="${stop}"`, 
+        // `--pretty=format:"%H %ci"`,
+        `--pretty=format:"%H"`, `--relative=${this.localDir}`);
+        let retval = [];
+        if (response.length > 0) {
+            let split = response.split('\n');
+            split.forEach(item => retval.push(item.split('"')[1]));
+        }
+        // console.log(`retval from logCommitHashInWindow():  ${retval}`);
+        return retval;
+    }
+    /**
+     *  logs changed filenames in time window
+     */
+    async logChangedFilenamesInTimeWindow(start, stop) {
+        // console.log(`logChangedFilenamesInTimeWindow(${start},${stop})`);
+        const commits = await this.logCommitHashInWindow(start, stop);
+        // console.log(`commits=${commits}`);
+        if (commits.length > 0) {
+            const files = await this.git.raw('diff', `--name-only`, `${commits[0]}..${commits[commits.length - 1]}`, `--relative=${this.localDir}`);
+            console.log(`retval from logChangedFilenamesInTimeWindow:  ${files}`);
+            let retval = files.split('\n');
+            if (retval[retval.length - 1] === "") {
+                // remove last empty \n
+                retval.pop();
+            }
+            return retval;
+        }
+        else {
+            return [];
+        }
+    }
+    /**
+     *  logs deltas in time window
+     */
+    async logDeltasInTimeWindow(start, stop) {
+        // console.log(`logChangedFilenamesInTimeWindow(${start},${stop})`);
+        const commits = await this.logCommitHashInWindow(start, stop);
+        console.log(`retval from logCommitHashInWindow:  ${JSON.stringify(commits)}`);
+        const delta = new _Delta_js__WEBPACK_IMPORTED_MODULE_2__/* .Delta */ .i();
+        if (commits.length > 0) {
+            const data = await this.git.raw('diff', `--raw`, `${commits[commits.length - 1]}..${commits[0]}`, `--relative=${this.localDir}`);
+            console.log(`retval from diff between commits ${commits[commits.length - 1]}..${commits[0]}:\n  ${data}`);
+            let lines = data.split('\n');
+            // remove last empty \n
+            lines.pop();
+            lines.forEach(line => {
+                const [a, b, c, d, subline] = line.split(' ');
+                const action = subline[0];
+                const path = subline.substring(1).trim();
+                console.log(`line=${line}`);
+                console.log(`action=${action}  path=${path}`);
+                const cveId = _CveCore_js__WEBPACK_IMPORTED_MODULE_1__/* .CveCore.getCveIdfromRepositoryFilePath */ .PG.getCveIdfromRepositoryFilePath(path);
+                if (_CveCore_js__WEBPACK_IMPORTED_MODULE_1__/* .CveId.isValidCveId */ .aZ.isValidCveId(cveId)) {
+                    switch (action) {
+                        case 'A':
+                            delta.add(_CveCore_js__WEBPACK_IMPORTED_MODULE_1__/* .CveCore.fromRepositoryFilePath */ .PG.fromRepositoryFilePath(path), _Delta_js__WEBPACK_IMPORTED_MODULE_2__/* .DeltaQueue.kNew */ .v.kNew);
+                            break;
+                        case 'M':
+                            delta.add(_CveCore_js__WEBPACK_IMPORTED_MODULE_1__/* .CveCore.fromRepositoryFilePath */ .PG.fromRepositoryFilePath(path), _Delta_js__WEBPACK_IMPORTED_MODULE_2__/* .DeltaQueue.kUpdated */ .v.kUpdated);
+                            break;
+                        default:
+                            delta.add(_CveCore_js__WEBPACK_IMPORTED_MODULE_1__/* .CveCore.fromRepositoryFilePath */ .PG.fromRepositoryFilePath(path), _Delta_js__WEBPACK_IMPORTED_MODULE_2__/* .DeltaQueue.kUnknown */ .v.kUnknown);
+                            break;
+                    }
+                }
+                else {
+                    //skip since it's not a CVE
+                }
+            });
+        }
+        return delta;
+    }
+}
+
+
+/***/ }),
+
 /***/ 70399:
 /***/ ((module, __unused_webpack___webpack_exports__, __nccwpck_require__) => {
 
@@ -65738,11 +69100,12 @@ __nccwpck_require__.a(module, async (__webpack_handle_async_dependencies__, __we
 /* harmony import */ var dotenv__WEBPACK_IMPORTED_MODULE_0__ = __nccwpck_require__(12437);
 /* harmony import */ var dotenv__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__nccwpck_require__.n(dotenv__WEBPACK_IMPORTED_MODULE_0__);
 /* harmony import */ var commander__WEBPACK_IMPORTED_MODULE_1__ = __nccwpck_require__(62620);
-/* harmony import */ var _commands_DateCommand_js__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(63537);
-/* harmony import */ var _commands_RebuildCommand_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(26979);
-/* harmony import */ var _commands_UpdateCommand_js__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(62171);
-/* harmony import */ var _commands_GenericCommand_js__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(20248);
-/* harmony import */ var _commands_GithubCommand_js__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(37114);
+/* harmony import */ var _commands_DateCommand_js__WEBPACK_IMPORTED_MODULE_6__ = __nccwpck_require__(63537);
+/* harmony import */ var _commands_DeltaCommand_js__WEBPACK_IMPORTED_MODULE_2__ = __nccwpck_require__(3608);
+/* harmony import */ var _commands_RebuildCommand_js__WEBPACK_IMPORTED_MODULE_3__ = __nccwpck_require__(26979);
+/* harmony import */ var _commands_UpdateCommand_js__WEBPACK_IMPORTED_MODULE_4__ = __nccwpck_require__(13272);
+/* harmony import */ var _commands_GenericCommand_js__WEBPACK_IMPORTED_MODULE_5__ = __nccwpck_require__(20248);
+/* harmony import */ var _commands_GithubCommand_js__WEBPACK_IMPORTED_MODULE_7__ = __nccwpck_require__(37114);
 // set up environment
 
 dotenv__WEBPACK_IMPORTED_MODULE_0__.config();
@@ -65752,15 +69115,17 @@ dotenv__WEBPACK_IMPORTED_MODULE_0__.config();
 
 
 
+
 const program = new commander__WEBPACK_IMPORTED_MODULE_1__/* .Command */ .mY();
 program
-    .version(_commands_GenericCommand_js__WEBPACK_IMPORTED_MODULE_4__/* .GenericCommand.getUtilityVersion */ .u.getUtilityVersion(), '-v, --version', 'output the version')
+    .version(_commands_GenericCommand_js__WEBPACK_IMPORTED_MODULE_5__/* .GenericCommand.getUtilityVersion */ .u.getUtilityVersion(), '-v, --version', 'output the version')
     .name(`cves`)
     .description(`CLI utility for working with CVEs`);
-const dateCommand = new _commands_DateCommand_js__WEBPACK_IMPORTED_MODULE_5__/* .DateCommand */ .d('date', program);
-const dumpCommand = new _commands_RebuildCommand_js__WEBPACK_IMPORTED_MODULE_2__/* .RebuildCommand */ .A(program);
-const updateCommand = new _commands_UpdateCommand_js__WEBPACK_IMPORTED_MODULE_3__/* .UpdateCommand */ .z(program);
-const githubCommand = new _commands_GithubCommand_js__WEBPACK_IMPORTED_MODULE_6__/* .GithubCommand */ .T(program);
+const dateCommand = new _commands_DateCommand_js__WEBPACK_IMPORTED_MODULE_6__/* .DateCommand */ .d('date', program);
+const deltaCommand = new _commands_DeltaCommand_js__WEBPACK_IMPORTED_MODULE_2__/* .DeltaCommand */ .E(program);
+const dumpCommand = new _commands_RebuildCommand_js__WEBPACK_IMPORTED_MODULE_3__/* .RebuildCommand */ .A(program);
+const updateCommand = new _commands_UpdateCommand_js__WEBPACK_IMPORTED_MODULE_4__/* .UpdateCommand */ .z(program);
+const githubCommand = new _commands_GithubCommand_js__WEBPACK_IMPORTED_MODULE_7__/* .GithubCommand */ .T(program);
 await program.parseAsync(process.argv);
 
 __webpack_async_result__();
@@ -65772,6 +69137,14 @@ __webpack_async_result__();
 /***/ ((module) => {
 
 module.exports = eval("require")("encoding");
+
+
+/***/ }),
+
+/***/ 72941:
+/***/ ((module) => {
+
+module.exports = eval("require")("original-fs");
 
 
 /***/ }),

@@ -16,6 +16,15 @@ export declare class ActivityLog {
     _activities: Activity[];
     constructor(options: ActivityLogOptions);
     clearActivities(): void;
+    /**
+     * @returns the most recent activity object
+     */
+    getMostRecentActivity(): Activity;
+    /**
+     * prepends activity to activities
+     * @param activity the activity object to prepend
+     * @returns the current list of activities, after prepending
+     */
     prepend(activity: Activity): Activity[];
     /** writes activities to a file
       * @return true iff the file was written

@@ -53,6 +53,14 @@ jobs:
     needs: [generate-name]
     environment: deployment
     runs-on: ubuntu-latest
+    env:
+      CVE_SERVICES_URL: https://cveawg.mitre.org
+      CVES_BASE_DIRECTORY: cves
+      CVES_RECENT_ACTIVITIES_FILENAME: recent_activities.json
+      CVES_DEFAULT_UPDATE_LOOKBACK_IN_MINS: 180
+      CVE_API_ORG: ${{secrets.CVE_API_ORG}}
+      CVE_API_USER: ${{secrets.CVE_API_USER}}
+      CVE_API_KEY: ${{secrets.CVE_API_KEY}}
     steps:
       # - name: create release
       #   id: create_release
@@ -65,6 +73,10 @@ jobs:
       #     draft: false
       #     prerelease: false
       #     # make_latest: true
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Download artifact from baseline workflow
         uses: dawidd6/action-download-artifact@v2
         with:
@@ -72,8 +84,12 @@ jobs:
           workflow_conclusion: success
           skip_unpack: true
           if_no_artifact_found: fail
-      - name: Update release notes
-        run: echo "CVEs updated" > release_notes.md
+      - name: build delta files
+        run: |
+          ls ./.github/workflows/dist
+          node ./.github/workflows/dist/index.js delta
+      # - name: Update release notes
+      #   run: echo "CVEs updated" > release_notes.md
       - name: create release with source code as artifacts
         uses: softprops/action-gh-release@v1
         with:
@@ -83,7 +99,4 @@ jobs:
           tag_name: cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
           files: |
             release_notes.md
-            changes_since_midnight.md
-            preview_cves/recent_activities.json
             *.zip
-          #   cves_${{ needs.generate-name.outputs.v_current_run_timestamp }}.zip
