@@ -2,7 +2,7 @@
 
 The [CVE List](https://www.cve.org/ResourcesSupport/Glossary?activeTerm=glossaryCVEList) is catalog of all [CVE Records](https://www.cve.org/ResourcesSupport/Glossary?activeTerm=glossaryRecord) identified by, or reported to, the [CVE Program](https://www.cve.org/).
 
-This repository hosts bulk download files of CVE Records in [CVE JSON 5.0 format](https://www.cve.org/AllResources/CveServices#cve-json-5) (view the [schema]()). You may search, download, and use the content hosted in this repository, per the [CVE Program Terms of Use](https://www.cve.org/Legal/TermsOfUse).
+This repository hosts bulk download files of CVE Records in [CVE JSON 5.0 format](https://www.cve.org/AllResources/CveServices#cve-json-5) (view the [schema](https://github.com/CVEProject/cve-schema)). You may search, download, and use the content hosted in this repository, per the [CVE Program Terms of Use](https://www.cve.org/Legal/TermsOfUse).
 
 **Legacy Format Downloads Available for Limited Time**—[Legacy format CVE List downloads](https://www.cve.org/Downloads#LegacyFormats), which are derived from CVE JSON 4.0, remain available for download on the CVE.ORG website for a limited time. These legacy formats will be **deprecated on or before December 31, 2023**. 
 
@@ -28,7 +28,7 @@ Issues listed in this section are not included in the [Repository Issue Tracker]
 
 ## Reporting Issues 
 
-Please review the [Contribute.md](https://github.com/CVEProject/cve-services/blob/dev/CONTRIBUTING.md) page prior to using one of the following: 
+Please review the [Contributing.md](https://github.com/CVEProject/cve-services/blob/dev/CONTRIBUTING.md) page prior to using one of the following: 
 
 - [Report repository and download file issues](https://github.com/CVEProject/cvelistV5/issues) (via the cvelistV5 repository Issue Tracker on GitHub)
 - [Report issues with the content of a CVE Record](https://cveform.mitre.org/) (via the CVE Program Request Web Forms) 
