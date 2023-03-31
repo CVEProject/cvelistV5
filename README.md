@@ -28,7 +28,7 @@ Issues listed in this section are not included in the [Repository Issue Tracker]
 
 ## Reporting Issues 
 
-Please review the [Contributing.md](https://github.com/CVEProject/cve-services/blob/dev/CONTRIBUTING.md) page prior to using one of the following: 
+Please use one of the following: 
 
 - [Report repository and download file issues](https://github.com/CVEProject/cvelistV5/issues) (via the cvelistV5 repository Issue Tracker on GitHub)
 - [Report issues with the content of a CVE Record](https://cveform.mitre.org/) (via the CVE Program Request Web Forms) 
