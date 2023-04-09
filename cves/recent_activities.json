@@ -1,5 +1,49 @@
 [
   {
+    "startTime": "2023-04-09T05:32:59.183Z",
+    "stopTime": "2023-04-09T05:33:00.780Z",
+    "duration": "1597 msecs",
+    "name": "cves in window",
+    "status": "completed",
+    "errors": [],
+    "notes": {},
+    "delta": {
+      "numberOfChanges": 2,
+      "new": [
+        {
+          "cveId": "CVE-2012-10010"
+        },
+        {
+          "cveId": "CVE-2014-125095"
+        }
+      ],
+      "updated": [],
+      "unknown": []
+    },
+    "steps": [
+      {
+        "startTime": "2023-04-09T05:32:59.183Z",
+        "stopTime": "2023-04-09T05:33:00.316Z",
+        "duration": "1133 msecs",
+        "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
+        "summary": {
+          "startWindow": "2023-04-09T02:32:58.336Z",
+          "endWindow": "2023-04-09T05:32:58.315Z",
+          "count": 7,
+          "cveIds": [
+            "CVE-2012-10010",
+            "CVE-2014-125095",
+            "CVE-2023-27533",
+            "CVE-2023-27534",
+            "CVE-2023-27535",
+            "CVE-2023-27536",
+            "CVE-2023-27538"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "startTime": "2023-04-09T03:08:30.802Z",
     "stopTime": "2023-04-09T03:08:32.912Z",
     "duration": "2110 msecs",
