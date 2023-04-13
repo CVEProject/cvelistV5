@@ -1,5 +1,40 @@
 [
   {
+    "startTime": "2023-04-13T10:02:03.631Z",
+    "stopTime": "2023-04-13T10:02:05.692Z",
+    "duration": "2061 msecs",
+    "name": "cves in window",
+    "status": "completed",
+    "errors": [],
+    "notes": {},
+    "delta": {
+      "numberOfChanges": 1,
+      "new": [
+        {
+          "cveId": "CVE-2022-45064"
+        }
+      ],
+      "updated": [],
+      "unknown": []
+    },
+    "steps": [
+      {
+        "startTime": "2023-04-13T10:02:03.632Z",
+        "stopTime": "2023-04-13T10:02:05.249Z",
+        "duration": "1617 msecs",
+        "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
+        "summary": {
+          "startWindow": "2023-04-13T07:02:02.521Z",
+          "endWindow": "2023-04-13T10:02:02.493Z",
+          "count": 1,
+          "cveIds": [
+            "CVE-2022-45064"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "startTime": "2023-04-13T06:30:41.666Z",
     "stopTime": "2023-04-13T06:30:43.745Z",
     "duration": "2079 msecs",
