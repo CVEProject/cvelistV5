@@ -1,5 +1,57 @@
 [
   {
+    "startTime": "2023-04-15T23:47:24.707Z",
+    "stopTime": "2023-04-15T23:47:27.000Z",
+    "duration": "2293 msecs",
+    "name": "cves in window",
+    "status": "completed",
+    "errors": [],
+    "notes": {},
+    "delta": {
+      "numberOfChanges": 1,
+      "new": [
+        {
+          "cveId": "CVE-2020-27545"
+        }
+      ],
+      "updated": [],
+      "unknown": []
+    },
+    "steps": [
+      {
+        "startTime": "2023-04-15T23:47:24.708Z",
+        "stopTime": "2023-04-15T23:47:26.391Z",
+        "duration": "1683 msecs",
+        "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
+        "summary": {
+          "startWindow": "2023-04-15T20:47:23.882Z",
+          "endWindow": "2023-04-15T23:47:23.861Z",
+          "count": 18,
+          "cveIds": [
+            "CVE-2018-15472",
+            "CVE-2018-17449",
+            "CVE-2018-17450",
+            "CVE-2018-17451",
+            "CVE-2018-17452",
+            "CVE-2018-17453",
+            "CVE-2018-17454",
+            "CVE-2018-17455",
+            "CVE-2018-17536",
+            "CVE-2018-17537",
+            "CVE-2018-17883",
+            "CVE-2019-14942",
+            "CVE-2019-14944",
+            "CVE-2020-17354",
+            "CVE-2020-27545",
+            "CVE-2020-29007",
+            "CVE-2021-43612",
+            "CVE-2021-45464"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "startTime": "2023-04-15T23:30:22.802Z",
     "stopTime": "2023-04-15T23:30:24.944Z",
     "duration": "2142 msecs",
