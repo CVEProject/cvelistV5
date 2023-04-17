@@ -1,5 +1,103 @@
 [
   {
+    "startTime": "2023-04-17T12:20:00.341Z",
+    "stopTime": "2023-04-17T12:20:02.763Z",
+    "duration": "2422 msecs",
+    "name": "cves in window",
+    "status": "completed",
+    "errors": [],
+    "notes": {},
+    "delta": {
+      "numberOfChanges": 16,
+      "new": [
+        {
+          "cveId": "CVE-2023-0277"
+        },
+        {
+          "cveId": "CVE-2023-0367"
+        },
+        {
+          "cveId": "CVE-2023-0374"
+        },
+        {
+          "cveId": "CVE-2023-0764"
+        },
+        {
+          "cveId": "CVE-2023-0765"
+        },
+        {
+          "cveId": "CVE-2023-0889"
+        },
+        {
+          "cveId": "CVE-2023-1274"
+        },
+        {
+          "cveId": "CVE-2023-1282"
+        },
+        {
+          "cveId": "CVE-2023-1325"
+        },
+        {
+          "cveId": "CVE-2023-1331"
+        },
+        {
+          "cveId": "CVE-2023-1371"
+        },
+        {
+          "cveId": "CVE-2023-1373"
+        },
+        {
+          "cveId": "CVE-2023-1413"
+        },
+        {
+          "cveId": "CVE-2023-1427"
+        },
+        {
+          "cveId": "CVE-2023-1473"
+        }
+      ],
+      "updated": [
+        {
+          "cveId": "CVE-2023-1381"
+        }
+      ],
+      "unknown": []
+    },
+    "steps": [
+      {
+        "startTime": "2023-04-17T12:20:00.342Z",
+        "stopTime": "2023-04-17T12:20:01.949Z",
+        "duration": "1607 msecs",
+        "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
+        "summary": {
+          "startWindow": "2023-04-17T09:19:59.808Z",
+          "endWindow": "2023-04-17T12:19:59.785Z",
+          "count": 18,
+          "cveIds": [
+            "CVE-2023-0277",
+            "CVE-2023-0367",
+            "CVE-2023-0374",
+            "CVE-2023-0764",
+            "CVE-2023-0765",
+            "CVE-2023-0889",
+            "CVE-2023-1274",
+            "CVE-2023-1282",
+            "CVE-2023-1325",
+            "CVE-2023-1331",
+            "CVE-2023-1371",
+            "CVE-2023-1373",
+            "CVE-2023-1381",
+            "CVE-2023-1413",
+            "CVE-2023-1427",
+            "CVE-2023-1473",
+            "CVE-2023-1723",
+            "CVE-2023-2017"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "startTime": "2023-04-17T11:48:43.091Z",
     "stopTime": "2023-04-17T11:48:44.753Z",
     "duration": "1662 msecs",
