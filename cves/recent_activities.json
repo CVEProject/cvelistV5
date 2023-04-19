@@ -1,5 +1,89 @@
 [
   {
+    "startTime": "2023-04-19T23:06:55.776Z",
+    "stopTime": "2023-04-19T23:06:58.052Z",
+    "duration": "2276 msecs",
+    "name": "cves in window",
+    "status": "completed",
+    "errors": [],
+    "notes": {},
+    "delta": {
+      "numberOfChanges": 10,
+      "new": [],
+      "updated": [
+        {
+          "cveId": "CVE-2020-28367"
+        },
+        {
+          "cveId": "CVE-2021-33196"
+        },
+        {
+          "cveId": "CVE-2021-36221"
+        },
+        {
+          "cveId": "CVE-2021-38297"
+        },
+        {
+          "cveId": "CVE-2021-39293"
+        },
+        {
+          "cveId": "CVE-2021-41771"
+        },
+        {
+          "cveId": "CVE-2021-44716"
+        },
+        {
+          "cveId": "CVE-2021-44717"
+        },
+        {
+          "cveId": "CVE-2022-23806"
+        },
+        {
+          "cveId": "CVE-2022-24921"
+        }
+      ],
+      "unknown": []
+    },
+    "steps": [
+      {
+        "startTime": "2023-04-19T23:06:55.777Z",
+        "stopTime": "2023-04-19T23:06:57.270Z",
+        "duration": "1493 msecs",
+        "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
+        "summary": {
+          "startWindow": "2023-04-19T20:06:54.918Z",
+          "endWindow": "2023-04-19T23:06:54.892Z",
+          "count": 23,
+          "cveIds": [
+            "CVE-2020-28367",
+            "CVE-2021-33196",
+            "CVE-2021-33970",
+            "CVE-2021-33971",
+            "CVE-2021-33972",
+            "CVE-2021-33973",
+            "CVE-2021-33974",
+            "CVE-2021-33975",
+            "CVE-2021-3429",
+            "CVE-2021-36221",
+            "CVE-2021-38297",
+            "CVE-2021-39293",
+            "CVE-2021-41771",
+            "CVE-2021-44716",
+            "CVE-2021-44717",
+            "CVE-2022-2084",
+            "CVE-2022-23806",
+            "CVE-2022-24921",
+            "CVE-2023-1382",
+            "CVE-2023-2166",
+            "CVE-2023-23451",
+            "CVE-2023-28327",
+            "CVE-2023-28328"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "startTime": "2023-04-19T22:17:16.173Z",
     "stopTime": "2023-04-19T22:17:18.392Z",
     "duration": "2219 msecs",
