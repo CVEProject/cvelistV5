@@ -1,5 +1,52 @@
 [
   {
+    "startTime": "2023-04-20T05:31:57.054Z",
+    "stopTime": "2023-04-20T05:31:58.832Z",
+    "duration": "1778 msecs",
+    "name": "cves in window",
+    "status": "completed",
+    "errors": [],
+    "notes": {},
+    "delta": {
+      "numberOfChanges": 3,
+      "new": [
+        {
+          "cveId": "CVE-2014-125099"
+        },
+        {
+          "cveId": "CVE-2022-4942"
+        }
+      ],
+      "updated": [
+        {
+          "cveId": "CVE-2021-44152"
+        }
+      ],
+      "unknown": []
+    },
+    "steps": [
+      {
+        "startTime": "2023-04-20T05:31:57.055Z",
+        "stopTime": "2023-04-20T05:31:58.035Z",
+        "duration": "980 msecs",
+        "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
+        "summary": {
+          "startWindow": "2023-04-20T02:31:56.476Z",
+          "endWindow": "2023-04-20T05:31:56.452Z",
+          "count": 6,
+          "cveIds": [
+            "CVE-2014-125099",
+            "CVE-2020-27827",
+            "CVE-2021-43612",
+            "CVE-2021-44152",
+            "CVE-2022-41723",
+            "CVE-2022-4942"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "startTime": "2023-04-20T04:08:18.358Z",
     "stopTime": "2023-04-20T04:08:20.560Z",
     "duration": "2202 msecs",
