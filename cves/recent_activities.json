@@ -1,5 +1,89 @@
 [
   {
+    "startTime": "2023-04-20T12:08:52.509Z",
+    "stopTime": "2023-04-20T12:08:54.835Z",
+    "duration": "2326 msecs",
+    "name": "cves in window",
+    "status": "completed",
+    "errors": [],
+    "notes": {},
+    "delta": {
+      "numberOfChanges": 12,
+      "new": [
+        {
+          "cveId": "CVE-2021-38363"
+        },
+        {
+          "cveId": "CVE-2021-38364"
+        },
+        {
+          "cveId": "CVE-2022-24035"
+        },
+        {
+          "cveId": "CVE-2022-24109"
+        },
+        {
+          "cveId": "CVE-2022-29604"
+        },
+        {
+          "cveId": "CVE-2022-29605"
+        },
+        {
+          "cveId": "CVE-2022-29606"
+        },
+        {
+          "cveId": "CVE-2022-29607"
+        },
+        {
+          "cveId": "CVE-2022-29608"
+        },
+        {
+          "cveId": "CVE-2022-29609"
+        },
+        {
+          "cveId": "CVE-2022-29944"
+        }
+      ],
+      "updated": [
+        {
+          "cveId": "CVE-2023-23355"
+        }
+      ],
+      "unknown": []
+    },
+    "steps": [
+      {
+        "startTime": "2023-04-20T12:08:52.510Z",
+        "stopTime": "2023-04-20T12:08:54.267Z",
+        "duration": "1757 msecs",
+        "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
+        "summary": {
+          "startWindow": "2023-04-20T09:08:51.325Z",
+          "endWindow": "2023-04-20T12:08:51.290Z",
+          "count": 16,
+          "cveIds": [
+            "CVE-2021-38363",
+            "CVE-2021-38364",
+            "CVE-2022-24035",
+            "CVE-2022-24109",
+            "CVE-2022-29604",
+            "CVE-2022-29605",
+            "CVE-2022-29606",
+            "CVE-2022-29607",
+            "CVE-2022-29608",
+            "CVE-2022-29609",
+            "CVE-2022-29944",
+            "CVE-2023-1767",
+            "CVE-2023-23355",
+            "CVE-2023-26845",
+            "CVE-2023-26846",
+            "CVE-2023-26847"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "startTime": "2023-04-20T11:20:41.830Z",
     "stopTime": "2023-04-20T11:20:44.188Z",
     "duration": "2358 msecs",
