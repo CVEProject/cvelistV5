@@ -1,5 +1,41 @@
 [
   {
+    "startTime": "2023-04-30T20:32:31.786Z",
+    "stopTime": "2023-04-30T20:32:34.010Z",
+    "duration": "2224 msecs",
+    "name": "cves in window",
+    "status": "completed",
+    "errors": [],
+    "notes": {},
+    "delta": {
+      "numberOfChanges": 1,
+      "new": [
+        {
+          "cveId": "CVE-2015-10104"
+        }
+      ],
+      "updated": [],
+      "unknown": []
+    },
+    "steps": [
+      {
+        "startTime": "2023-04-30T20:32:31.787Z",
+        "stopTime": "2023-04-30T20:32:33.117Z",
+        "duration": "1330 msecs",
+        "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
+        "summary": {
+          "startWindow": "2023-04-30T17:32:30.987Z",
+          "endWindow": "2023-04-30T20:32:30.950Z",
+          "count": 2,
+          "cveIds": [
+            "CVE-2015-10104",
+            "CVE-2020-10650"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "startTime": "2023-04-30T18:13:04.191Z",
     "stopTime": "2023-04-30T18:13:05.972Z",
     "duration": "1781 msecs",
