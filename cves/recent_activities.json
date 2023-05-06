@@ -1,5 +1,41 @@
 [
   {
+    "startTime": "2023-05-06T02:00:26.142Z",
+    "stopTime": "2023-05-06T02:00:28.244Z",
+    "duration": "2102 msecs",
+    "name": "cves in window",
+    "status": "completed",
+    "errors": [],
+    "notes": {},
+    "delta": {
+      "numberOfChanges": 1,
+      "new": [
+        {
+          "cveId": "CVE-2022-22313"
+        }
+      ],
+      "updated": [],
+      "unknown": []
+    },
+    "steps": [
+      {
+        "startTime": "2023-05-06T02:00:26.143Z",
+        "stopTime": "2023-05-06T02:00:27.695Z",
+        "duration": "1552 msecs",
+        "stepDescription": "UPDATE_BY_MODIFICATION_DATE_WINDOW",
+        "summary": {
+          "startWindow": "2023-05-05T23:00:25.260Z",
+          "endWindow": "2023-05-06T02:00:25.226Z",
+          "count": 2,
+          "cveIds": [
+            "CVE-2016-15031",
+            "CVE-2022-22313"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "startTime": "2023-05-06T00:40:20.744Z",
     "stopTime": "2023-05-06T00:40:23.203Z",
     "duration": "2459 msecs",
