@@ -1,6 +1,7 @@
 /**
  *  ActivityLog - log of activities
- *  Intent is to log everything that makes changes to the repository
+ *  Intent is to log everything that makes changes to the repository, so key information is stored from
+ *  GitHub action to GitHub action (e.g., stopdate of last activity for re-running a command)
  */
 import { Activity } from './Activity.js';
 export interface ActivityLogOptions {

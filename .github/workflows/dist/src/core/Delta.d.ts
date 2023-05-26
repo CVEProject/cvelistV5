@@ -1,5 +1,13 @@
 /**
- *  Delta object, calculates deltas in activities
+ *  This is the Delta class.  A delta is a list of files in a directory whose content changed from time T1 to T2.
+ *  Changes can be a new added file, updated file, or deleted file (though currently, we do not work with deleted
+ *  files since no CVEs should ever be deleted once it is published).
+ *
+ *  Note that this class REQUIRES git and a git history.  It does not look at files, only git commits in git history.
+ *  So during testing, simply copying /cves from another directory WILL NOT WORK because git history
+ *  does not have those commits.
+ *  However, if you need to make zip files, it will copy files to a directory, and zip that, so the /cves directory
+ *  will need to be in the current directory
  */
 import { CveCore } from './CveCore.js';
 export declare type IsoDate = string;
@@ -29,7 +37,7 @@ export declare class Delta {
      *   - its CVE ID (for example, CVE-1970-0001)
      *   - its partial path in the repository (for example, ./abc/def/CVE-1970-0001)
      *  @param path a full or partial filespec (for example, ./abc/def/CVE-1970-0001.json)
-     *  @todo should be in a separate CveId or Cve class
+     *  @todo should be in a separate CveId or CveRecord class
      */
     static getCveIdMetaData(path: string): [string | undefined, string | undefined];
     /** calculates the delta filtering using the specified directory
@@ -67,6 +75,6 @@ export declare class Delta {
      * @param relDir optional relative path from current directory to write the delta CVEs, default is `deltas` directory
      * @param zipFile optional relative path from the current directory to write the zip file, default is NOT to write to zip
      */
-    writeCves(relDir?: string, zipFile?: any): void;
+    writeCves(relDir?: string | undefined, zipFile?: string | undefined): void;
     writeTextFile(relFilepath?: string): void;
 }

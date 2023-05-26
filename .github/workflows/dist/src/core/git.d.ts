@@ -1,5 +1,5 @@
 /** a wrapper/fascade class to make it easier to use git libraries from within cve utils */
-import { CommitResult, SimpleGit, Response, StatusResult } from 'simple-git';
+import { CommitResult, Response, SimpleGit, StatusResult } from 'simple-git';
 import { Delta } from './Delta.js';
 export { StatusResult, Response };
 export declare class Git {
