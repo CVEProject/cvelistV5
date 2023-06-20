@@ -22,7 +22,7 @@ export declare class CveDate {
     /** the constructor only creates a new CveDate based on an ISO date string
      *  @param isoDateStr a string represenation of a date in ISO/UTC/Z format
      *                    defaults to "now"
-    */
+     */
     constructor(isoDateStr?: IsoDateString | string);
     /** returns this as an ISO/UTC/Z date string */
     asIsoDateString(): IsoDateString;
@@ -49,4 +49,19 @@ export declare class CveDate {
      * @returns today's midnight as a Javascript Date object
      */
     static getMidnight(): Date;
+    /**
+     * returns yesterday's midnight (i.e., yesterday's date with hours all set to 0)
+     * @returns yesterday's midnight as a Javascript Date object
+     */
+    static getMidnightYesterday(): Date;
+    /**
+     * returns yesterday's date as a string
+     * @returns yesterday's date as a string
+     */
+    static getYesterday(): string;
+    /**
+     * returns yesterday's midnight (i.e., yesterday's date with hours all set to 0)
+     * @returns yesterday's midnight as a Javascript Date object
+     */
+    static getSecondsAfterMidnight(): number;
 }

@@ -48143,6 +48143,8 @@ const {
   Help
 } = commander;
 
+// EXTERNAL MODULE: ./node_modules/date-fns/index.js
+var date_fns = __nccwpck_require__(3314);
 // EXTERNAL MODULE: ./node_modules/date-fns/_lib/cloneObject/index.js
 var cloneObject = __nccwpck_require__(7934);
 // EXTERNAL MODULE: ./node_modules/date-fns/format/index.js
@@ -49546,14 +49548,15 @@ class IsoDateString {
  */
 
 
+
 class CveDate {
     /** the Date object this CveDate instance wraps */
     _jsDate;
     /** the constructor only creates a new CveDate based on an ISO date string
      *  @param isoDateStr a string represenation of a date in ISO/UTC/Z format
      *                    defaults to "now"
-    */
-    constructor(isoDateStr = "") {
+     */
+    constructor(isoDateStr = '') {
         if (isoDateStr.length === 0) {
             this._jsDate = new Date();
         }
@@ -49573,20 +49576,20 @@ class CveDate {
         return new IsoDateString(CveDate.toISOString(this._jsDate));
     }
     /** returns a ISO/UTC formatted string in specified locale and time zone */
-    asDateString(timeZone = "America/New_York") {
-        return formatInTimeZone(this._jsDate, timeZone, "yyyy-MM-dd pp zzzz");
+    asDateString(timeZone = 'America/New_York') {
+        return formatInTimeZone(this._jsDate, timeZone, 'yyyy-MM-dd pp zzzz');
     }
     /** returns JS Date.toISOString() */
     toString() {
         return CveDate.toISOString(this._jsDate);
     }
-    // ----- static class utilities ----- ----- ----- ----- ----- 
+    // ----- static class utilities ----- ----- ----- ----- -----
     /**
      * @param jsDate a JS Date object, defaults to current timestamp
      * @returns the current date in ISO string format (i.e., JS Date's toISOString() format)
      */
     static toISOString(jsDate = null) {
-        const time = (jsDate) ? jsDate : new Date();
+        const time = jsDate ? jsDate : new Date();
         return time.toISOString();
     }
     /**
@@ -49613,6 +49616,32 @@ class CveDate {
         const midnight = new Date();
         midnight.setUTCHours(0, 0, 0, 0);
         return midnight;
+    }
+    /**
+     * returns yesterday's midnight (i.e., yesterday's date with hours all set to 0)
+     * @returns yesterday's midnight as a Javascript Date object
+     */
+    static getMidnightYesterday() {
+        const midnight = CveDate.getMidnight();
+        const midnightYesterday = (0,date_fns.sub)(midnight, { days: 1 });
+        return midnightYesterday;
+    }
+    /**
+     * returns yesterday's date as a string
+     * @returns yesterday's date as a string
+     */
+    static getYesterday() {
+        const midnightYesterday = CveDate.getMidnightYesterday();
+        return CveDate.getDateComponents(midnightYesterday)[0];
+    }
+    /**
+     * returns yesterday's midnight (i.e., yesterday's date with hours all set to 0)
+     * @returns yesterday's midnight as a Javascript Date object
+     */
+    static getSecondsAfterMidnight() {
+        const now = new Date();
+        const midnight = CveDate.getMidnight();
+        return (0,date_fns.differenceInSeconds)(now, midnight);
     }
 }
 
@@ -49663,19 +49692,20 @@ class GenericCommand {
     */
     prerun(options) {
         const now = new CveDate();
-        if (options.display !== false) {
+        if (options.preamble !== false && options.terse !== true) {
             console.log(`CVE Utils version ${GenericCommand.getUtilityVersion()}`);
             console.log(`  starting '${this._name}' command...`);
         }
-        console.log(`  local  : ${now.asDateString((options.localTimezone) ? options.localTimezone : "America/New_York")}`);
-        console.log(`  ISO    : ${now.asIsoDateString()}`);
-        if (options.display !== false) {
+        if (options.terse !== true) {
+            console.log(`  local  : ${now.asDateString((options.localTimezone) ? options.localTimezone : "America/New_York")}`);
+            console.log(`  ISO    : ${now.asIsoDateString()}`);
+        }
+        if (options.preamble !== false && options.terse !== true) {
             console.log(`environment variables:
         CVES_BASE_DIRECTORY: ${process.env.CVES_BASE_DIRECTORY}
         CVE_SERVICES_URL: ${process.env.CVE_SERVICES_URL}`);
             console.log(`${this._name} command options:  `);
             console.log(`${JSON.stringify(options, null, 2)}`);
-            console.log();
         }
     }
     /** common functions to run after run()
@@ -49695,6 +49725,7 @@ class GenericCommand {
 
 ;// CONCATENATED MODULE: ./src/commands/DateCommand.ts
 
+
 /** Command to print out current date in various formats */
 class DateCommand extends GenericCommand {
     constructor(name, program) {
@@ -49702,15 +49733,47 @@ class DateCommand extends GenericCommand {
         this._program
             .command(name)
             .description('current date')
-            .option('--local-timezone <IANA timezone>', 'show current time in timezone', "America/New_York")
+            .option('--local-timezone <IANA timezone>', 'show current time in timezone', 'America/New_York')
+            .option('--after-midnight-by-at-most-secs <secs>', 'return true iff current time is after midnight (ISO date) by at most specified secs', '18000')
+            .option('--midnight', 'show midnight of today (ISO date)')
+            .option('--midnight-yesterday', 'show midnight of yesterday (ISO date)')
+            .option('--yesterday', "show yesterday's date (ISO date)")
+            .option('--terse', 'show only result, useful for bash scripts')
             .action(this.run);
     }
     async run(options) {
-        super.prerun({ display: false, ...options });
-        super.postrun({ display: false });
+        super.prerun({ preamble: false, ...options });
+        if (options.midnight) {
+            const tag = options.terse ? '' : `  midnight:  `;
+            console.log(`${tag}${CveDate.toISOString(CveDate.getMidnight())}`);
+        }
+        else if (options.midnightYesterday) {
+            const tag = options.terse ? '' : `  midnightYesterday:  `;
+            console.log(`${tag}${CveDate.toISOString(CveDate.getMidnightYesterday())}`);
+        }
+        else if (options.yesterday) {
+            const tag = options.terse ? '' : `  yesterday:  `;
+            console.log(`${tag}${CveDate.getYesterday()}`);
+        }
+        else if (options.afterMidnightByAtMostSecs) {
+            if (CveDate.getSecondsAfterMidnight() <=
+                parseInt(options.afterMidnightByAtMostSecs)) {
+                console.log(`true`);
+            }
+            else {
+                console.log(`false`);
+            }
+        }
+        super.postrun(options);
     }
 }
 
+// EXTERNAL MODULE: ./node_modules/date-fns/endOfYesterday/index.js
+var endOfYesterday = __nccwpck_require__(66);
+var endOfYesterday_default = /*#__PURE__*/__nccwpck_require__.n(endOfYesterday);
+// EXTERNAL MODULE: ./node_modules/date-fns/startOfYesterday/index.js
+var startOfYesterday = __nccwpck_require__(1672);
+var startOfYesterday_default = /*#__PURE__*/__nccwpck_require__.n(startOfYesterday);
 // EXTERNAL MODULE: external "fs"
 var external_fs_ = __nccwpck_require__(7147);
 var external_fs_default = /*#__PURE__*/__nccwpck_require__.n(external_fs_);
@@ -53898,16 +53961,6 @@ class CveId {
             ];
         }
         return CveId._years;
-        // return [
-        //   1970, // used for testing, validating
-        //   1999, 2000, 2001, 2002, 2003,
-        //   2004, 2005, 2006, 2007, 2008,
-        //   2009, 2010, 2011, 2012, 2013,
-        //   2014, 2015, 2016, 2017, 2018,
-        //   2019, 2020, 2021, 2022, 2023,
-        //   2024, 2025
-        // ];
-        // return CveId.getAllYears();
     }
     /** given a cveId, returns the git hub repository partial directory it should go into
      *  @param cveId string or CveId object representing the CVE ID (e.g., CVE-1999-0001)
@@ -54236,8 +54289,9 @@ class FsUtils {
  *  Note that this class REQUIRES git and a git history.  It does not look at files, only git commits in git history.
  *  So during testing, simply copying /cves from another directory WILL NOT WORK because git history
  *  does not have those commits.
- *  However, if you need to make zip files, it will copy files to a directory, and zip that, so the /cves directory
- *  will need to be in the current directory
+ *
+ *  When making zip files, this class copies CVE JSON files from /cves to a directory, and zip that, so the /cves directory
+ *  needs to be in the current directory
  */
 
 
@@ -54475,6 +54529,8 @@ class Delta /*implements DeltaProps*/ {
 
 
 
+
+
 class DeltaCommand extends GenericCommand {
     constructor(program) {
         const name = 'delta';
@@ -54483,22 +54539,36 @@ class DeltaCommand extends GenericCommand {
             .command(name)
             .description('cve deltas (cve file changes)')
             .option('--after <ISO timestamp>', 'show CVEs changed since <timestamp>, defaults to UTC midnight of today', `${CveDate.getMidnight().toISOString()}`)
+            .option(`--yesterday-all`, 'do a delta of all of the CVEs changed yesterday')
             // .option('--repository <path>', 'set repository, defaults to env var CVES_BASE_DIRECTORY', process.env.CVES_BASE_DIRECTORY)
             .action(this.run);
     }
     async run(options) {
         super.prerun(options);
-        // console.log(`delta command called with ${JSON.stringify(options, null, 2)}`);
-        const timestamp = new Date();
-        const delta = await Delta.newDeltaFromGitHistory(options.after);
-        // console.log(`delta=${JSON.stringify(delta, null, 2)}`);
-        console.log(delta.toText());
-        const date = format_default()(timestamp, 'yyyy-MM-dd');
-        const time = format_default()(timestamp, 'HH');
-        const deltaFilename = `${date}_delta_CVEs_at_${time}00Z`;
-        delta.writeFile(`${deltaFilename}.json`);
-        delta.writeCves(undefined, `${deltaFilename}.zip`);
-        delta.writeTextFile(`release_notes.md`);
+        if (options.yesterdayAll) {
+            const timestamp = startOfYesterday_default()();
+            const delta = await Delta.newDeltaFromGitHistory(timestamp.toISOString(), endOfYesterday_default()().toISOString());
+            console.log(`delta=${JSON.stringify(delta, null, 2)}`);
+            console.log(delta.toText());
+            const date = format_default()(timestamp, 'yyyy-MM-dd');
+            // const time = format(timestamp, 'HH');
+            const deltaFilename = `${date}_delta_CVEs_at_end_of_day`;
+            delta.writeFile(`${deltaFilename}.json`);
+            delta.writeCves(undefined, `${deltaFilename}.zip`);
+            delta.writeTextFile(`release_notes.md`);
+        }
+        else {
+            const timestamp = new Date();
+            const delta = await Delta.newDeltaFromGitHistory(options.after);
+            // console.log(`delta=${JSON.stringify(delta, null, 2)}`);
+            console.log(delta.toText());
+            const date = format_default()(timestamp, 'yyyy-MM-dd');
+            const time = format_default()(timestamp, 'HH');
+            const deltaFilename = `${date}_delta_CVEs_at_${time}00Z`;
+            delta.writeFile(`${deltaFilename}.json`);
+            delta.writeCves(undefined, `${deltaFilename}.zip`);
+            delta.writeTextFile(`release_notes.md`);
+        }
         super.postrun(options);
     }
 }
@@ -59287,8 +59357,6 @@ class CveService extends ApiBaseService {
     ;
 }
 
-// EXTERNAL MODULE: ./node_modules/date-fns/index.js
-var date_fns = __nccwpck_require__(3314);
 ;// CONCATENATED MODULE: ./src/core/Activity.ts
 /**
  *  Activity object
@@ -59650,7 +59718,7 @@ dotenv__WEBPACK_IMPORTED_MODULE_0__.config();
  *  The format follows semver for released software: Major.Minor.Patch, e.g., `1.0.0`
  *  However before release, it only uses the GitHub Project sprint number, e.g., `Sprint-1`
  */
-const version = `1.0.0`;
+const version = `1.0.1`;
 
 const program = new _commands_MainCommands_js__WEBPACK_IMPORTED_MODULE_1__/* .MainCommands */ .D(version);
 await program.run();

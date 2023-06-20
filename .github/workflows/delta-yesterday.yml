@@ -1,0 +1,65 @@
+# Github Action for final delta release of all of yesterday's CVEs 
+# that had been either added or updated
+name: CVE Yesterday's Delta Release
+
+on:
+  # at midnight (UTC) every night
+  schedule:
+    - cron: '0 0 * * *'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log level'
+        required: false
+        default: 'debug'
+jobs:
+  create_release:
+    environment: deployment
+    runs-on: ubuntu-latest
+    env:
+      CVE_SERVICES_URL: https://cveawg.mitre.org
+      CVES_BASE_DIRECTORY: cves
+      CVES_RECENT_ACTIVITIES_FILENAME: recent_activities.json
+      CVES_DEFAULT_UPDATE_LOOKBACK_IN_MINS: 180
+      CVE_API_ORG: ${{secrets.CVE_API_ORG}}
+      CVE_API_USER: ${{secrets.CVE_API_USER}}
+      CVE_API_KEY: ${{secrets.CVE_API_KEY}}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Get utility version
+        id: version
+        run: node ./.github/workflows/dist/index.js --version
+      - name: generate-name
+        id: timestamp
+        run: echo "timestamp=$(node ./.github/workflows/dist/index.js date --yesterday --terse)" >> $GITHUB_ENV
+      - name: build delta files
+        run: |
+          ls ./.github/workflows/dist
+          node ./.github/workflows/dist/index.js delta --yesterday-all
+      # it would be nice to have yesterday's midnight baseline in this release, but by the time this workflow
+      # runs, that artifact is no longer accessible using dawidd6/action-download-artifact@v2
+      # - name: Download artifact from yesterday's baseline workflow
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #     workflow: baseline.yml
+      #     workflow_conclusion: success
+      #     skip_unpack: true
+      #     if_no_artifact_found: fail
+      #     name: ${{ env.timestamp }}_all_CVEs_at_midnight.zip
+      - name: ls cwd
+        run: |
+          ls
+      - name: create release with source code as artifacts
+        uses: softprops/action-gh-release@v1
+        with:
+          name: CVE ${{ env.timestamp }} at End of Day
+          body_path: ./release_notes.md
+          tag_name: cve_${{ env.timestamp }}_at_end_of_day 
+          files: |
+            release_notes.md
+            *.zip

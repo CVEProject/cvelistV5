@@ -6,8 +6,9 @@
  *  Note that this class REQUIRES git and a git history.  It does not look at files, only git commits in git history.
  *  So during testing, simply copying /cves from another directory WILL NOT WORK because git history
  *  does not have those commits.
- *  However, if you need to make zip files, it will copy files to a directory, and zip that, so the /cves directory
- *  will need to be in the current directory
+ *
+ *  When making zip files, this class copies CVE JSON files from /cves to a directory, and zip that, so the /cves directory
+ *  needs to be in the current directory
  */
 import { CveCore } from './CveCore.js';
 export declare type IsoDate = string;

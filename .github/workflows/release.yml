@@ -4,8 +4,8 @@ name: CVE Release
 
 on:
   # at 0 min after each hour
-  # note this does not include update at 0 min after each hour
-  #   since that job will be running in parallel to this
+  # note this does not include any updates at 0 min after each hour
+  #   since that job will be running in parallel to this.  Those updates will be picked up the following hour.
   # note also that github does not guarantee specified time, and it can start much later than specified
   schedule:
     - cron: '0 * * * *'
@@ -26,29 +26,6 @@ jobs:
       - name: generate-name
         id: get-timestamp
         run: echo "out=$(date '+%Y-%m-%d_%H00Z')" >> $GITHUB_OUTPUT
-  # create_artifacts:
-  #   needs: generate-name
-  #   environment: test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: clone cves
-  #       uses: actions/checkout@v3
-  #     - name: tag repository
-  #       run: |
-  #         git tag cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
-  #         git push origin cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
-  #     - name: build cves for zip download
-  #       run: |
-  #         pwd
-  #         ls -al
-  #         zip -r cves.zip ./review_set -x "*/\.*"
-  #         # do a subset
-  #         # zip -r cves1999.zip ./review_set/1999 -x "*/\.*"
-  #     - name: Use the Upload Artifact GitHub Action
-  #       uses: actions/upload-artifact@v3
-  #       with:
-  #         name: cves_${{ needs.generate-name.outputs.v_current_run_timestamp }}.zip
-  #         path: ./cves.zip
   create_release:
     needs: [generate-name]
     environment: deployment
@@ -88,8 +65,6 @@ jobs:
         run: |
           ls ./.github/workflows/dist
           node ./.github/workflows/dist/index.js delta
-      # - name: Update release notes
-      #   run: echo "CVEs updated" > release_notes.md
       - name: create release with source code as artifacts
         uses: softprops/action-gh-release@v1
         with:

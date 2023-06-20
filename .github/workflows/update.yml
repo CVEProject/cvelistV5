@@ -33,8 +33,6 @@ jobs:
       CVE_API_ORG: ${{secrets.CVE_API_ORG}}
       CVE_API_USER: ${{secrets.CVE_API_USER}}
       CVE_API_KEY: ${{secrets.CVE_API_KEY}}
-    # outputs:
-    #   v_current_run_timestamp: ${{ steps.get-timestamp.outputs.out }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -50,8 +48,8 @@ jobs:
           git remote set-url origin https://${GITHUB_TOKEN}@github.com/${{github.repository}}.git
           node ./.github/workflows/dist/index.js update ${{ github.event.inputs.params }}
           git push
-      - name: output
-        uses: actions/github-script@v6
-        with:
-          script: |
-              core.notice("this is a notice")
+      # - name: output
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #         core.notice("this is a notice")
