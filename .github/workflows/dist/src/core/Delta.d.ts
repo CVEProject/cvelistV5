@@ -10,21 +10,48 @@
  *  When making zip files, this class copies CVE JSON files from /cves to a directory, and zip that, so the /cves directory
  *  needs to be in the current directory
  */
-import { CveCore } from './CveCore.js';
+import { CveCorePlus } from './CveCorePlus.js';
 export declare type IsoDate = string;
 export declare enum DeltaQueue {
     kNew = 1,
     kPublished = 2,
     kUpdated = 3,
-    kUnknown = 4
+    kError = 4
+}
+/**
+ * Output JSON format for delta.json and deltaLog.json based on feedback
+ * from the AWG on 8/22/2023 to keep the output simple
+ *
+ * So internally, we are storing the full CveCorePlus, but externally,
+ * and specifically when writing out to JSON, we are using this shortened format
+ 
+ * see https://github.com/CVEProject/cvelistV5/issues/23 for some additional discussions
+ * before and after the AWG meeting on 8/22
+ */
+export declare class DeltaOutpuItem {
+    static _cveOrgPrefix: string;
+    static _githubRawJsonPrefix: string;
+    cveId: string;
+    cveOrgLink?: string;
+    githubLink?: string;
+    dateUpdated?: string;
+    static fromCveCorePlus(cvep: CveCorePlus): DeltaOutpuItem;
+    static replacer(key: string, value: any): any;
+    toJSON(): {
+        cveId: string;
+        cveOrgLink: string;
+        githubLink: string;
+        dateUpdated: string;
+    };
 }
 export declare class Delta {
+    fetchTime?: string;
     numberOfChanges: number;
-    new: CveCore[];
-    updated: CveCore[];
-    unknown: CveCore[];
+    new: CveCorePlus[];
+    updated: CveCorePlus[];
+    error?: CveCorePlus[];
     /** constructor
-     *  @param prevDelta a previous delta to intialize this object, essentially appending new
+     *  @param prevDelta a previous delta to intialize this object, essentially prepending new
      *                   deltas to the privous ones (default is none)
      */
     constructor(prevDelta?: Partial<Delta>);
@@ -34,6 +61,10 @@ export declare class Delta {
      * @param stop git log stop time window (defaults to now)
      */
     static newDeltaFromGitHistory(start: string, stop?: string, repository?: string): Promise<Delta>;
+    /**
+     * updates data in new and updated lists using CVE ID
+     */
+    hydrate(): void;
     /** returns useful metadata given a repository filespec:
      *   - its CVE ID (for example, CVE-1970-0001)
      *   - its partial path in the repository (for example, ./abc/def/CVE-1970-0001)
@@ -64,7 +95,7 @@ export declare class Delta {
      *  @param cve a CveCore object to be added
      *  @param queue the DeltaQueue enum specifying which queue to add to
      */
-    add(cve: CveCore, queue: DeltaQueue): void;
+    add(cve: CveCorePlus, queue: DeltaQueue): void;
     /** summarize the information in this Delta object in human-readable form */
     toText(): string;
     /** writes the delta to a JSON file

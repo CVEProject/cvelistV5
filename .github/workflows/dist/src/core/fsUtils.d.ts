@@ -16,6 +16,13 @@ export declare class FsUtils {
      */
     static rm(path: string): boolean;
     static ls(path: string): string[];
+    static deleteProperties(obj: unknown, propPath: string): unknown;
+    /** returns true iff the content of file at path 1 and the file at path 2 are exactly the same
+     *  @param path1 the relative or fullpath to a file
+     *  @param path2 the relative or fullpath to another file
+     *  @param ignoreJsonProps optional array of json paths to ignore, e.g., ["cveMetadata.datePublished", "cveMetadata.dateUpdated", "cveMetadata.dateReserved"]
+     */
+    static isSameContent(path1: string, path2: string, ignoreJsonProps?: string[]): boolean;
     /**
      * Synchronously generate a zip file from an array of files (no directories)
      * @param filepaths array of filenames to be zipped

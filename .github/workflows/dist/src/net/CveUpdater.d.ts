@@ -6,6 +6,7 @@ import { ActivityLogOptions, ActivityLog } from '../core/ActivityLog.js';
 export declare const kActivity_UpdateByModificationDateWindow = "UPDATE_BY_MODIFICATION_DATE_WINDOW";
 export declare const kActivity_UpdateByPage = "UPDATE_BY_PAGE";
 export declare class CveUpdater {
+    static _recsPerPage: number;
     /** repository base path */
     _repository_base: string;
     _release_note_path: string;
