@@ -4,7 +4,7 @@ The [CVE List](https://www.cve.org/ResourcesSupport/Glossary?activeTerm=glossary
 
 This repository hosts bulk download files of CVE Records in [CVE JSON 5.0 format](https://www.cve.org/AllResources/CveServices#cve-json-5) (view the [schema](https://github.com/CVEProject/cve-schema)). You may search, download, and use the content hosted in this repository, per the [CVE Program Terms of Use](https://www.cve.org/Legal/TermsOfUse).
 
-**Legacy Format Downloads Available for Limited Time**—[Legacy format CVE List downloads](https://www.cve.org/Downloads#legacy-format) that are currently available for download on the CVE.ORG website, which are derived from CVE JSON 4.0, will be [phased out in the first half of 2024](https://medium.com/@cve_program/legacy-cve-download-formats-will-be-phased-out-beginning-january-1-2024-13de552c9029). Learn more [here](https://medium.com/@cve_program/legacy-cve-download-formats-will-be-phased-out-beginning-january-1-2024-13de552c9029).
+**Legacy Format Downloads Available for Limited Time**—[Legacy format CVE List downloads](https://www.cve.org/Downloads#legacy-format) that are currently available for download on the CVE.ORG website, which are derived from CVE JSON 4.0, will be [phased out in the first half of 2024](https://medium.com/@cve_program/deprecation-of-legacy-cve-download-formats-now-underway-43701aafcc67). Learn more [here](https://medium.com/@cve_program/deprecation-of-legacy-cve-download-formats-now-underway-43701aafcc67).
 
 ## Releases
 
