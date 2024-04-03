@@ -2,13 +2,13 @@
 
 The [CVE List](https://www.cve.org/ResourcesSupport/Glossary?activeTerm=glossaryCVEList) is catalog of all [CVE Records](https://www.cve.org/ResourcesSupport/Glossary?activeTerm=glossaryRecord) identified by, or reported to, the [CVE Program](https://www.cve.org/).
 
-This repository hosts bulk download files of CVE Records in [CVE JSON 5.0 format](https://www.cve.org/AllResources/CveServices#cve-json-5) (view the [schema](https://github.com/CVEProject/cve-schema)). You may search, download, and use the content hosted in this repository, per the [CVE Program Terms of Use](https://www.cve.org/Legal/TermsOfUse).
+This repository hosts bulk download files of CVE Records in the [CVE Record Format](https://www.cve.org/AllResources/CveServices#cve-json-5) (view the [schema](https://github.com/CVEProject/cve-schema)). You may search, download, and use the content hosted in this repository, per the [CVE Program Terms of Use](https://www.cve.org/Legal/TermsOfUse).
 
-**Legacy Format Downloads Available for Limited Time**—[Legacy format CVE List downloads](https://www.cve.org/Downloads#legacy-format) that are currently available for download on the CVE.ORG website, which are derived from CVE JSON 4.0, will be [phased out in the first half of 2024](https://medium.com/@cve_program/deprecation-of-legacy-cve-download-formats-now-underway-43701aafcc67). Learn more [here](https://medium.com/@cve_program/deprecation-of-legacy-cve-download-formats-now-underway-43701aafcc67).
+**Legacy Format Downloads Available for Limited Time**—[Legacy format CVE List downloads](https://www.cve.org/Downloads#legacy-format) that are currently available for download on the CVE.ORG website, which are derived from CVE JSON 4.0, will be phased out in the first half of 2024 and [no longer updated after June 30, 2024](https://www.cve.org/Media/News/item/blog/2024/03/12/Phase-3-Deprecation-of-Legacy-Downloads-Underway). Learn more [here](https://www.cve.org/Media/News/item/blog/2024/03/12/Phase-3-Deprecation-of-Legacy-Downloads-Underway).
 
 ## Releases
 
-This repository includes [release versions](https://github.com/CVEProject/cvelistV5/releases) of all current CVE Records generated from the official CVE Services API. Baseline releases are issued once per day at midnight and posted in the following file name format: CVE Prefix-Year-Month-Day _ Greenwich Mean Time (GMT), (e.g., “CVE 2023-03-28_0000Z”). Hourly updates are also provided on the [Releases](https://github.com/CVEProject/cvelistV5/releases) page using the same file name format, with time changes encoded at the end.
+This repository includes [release versions](https://github.com/CVEProject/cvelistV5/releases) of all current CVE Records generated from the official CVE Services API. Baseline releases are issued once per day at midnight and posted in the following file name format: CVE Prefix-Year-Month-Day_Greenwich Mean Time (GMT), (e.g., “CVE 2023-03-28_0000Z”). Hourly updates are also provided on the [Releases](https://github.com/CVEProject/cvelistV5/releases) page using the same file name format, with time changes encoded at the end.
 
 Each baseline or hourly release includes three items:
 
