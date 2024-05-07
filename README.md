@@ -1,3 +1,5 @@
+> **Note**:  the upstream CVE REST Services is scheduled to be down for a scheduled update to CVE Schema 5.1 on May 8, 2024 between 2pm and 5pm EDT.  This means that this repository will not be able to contact CVE REST Services during that time.  The repository will remain available for normal git operations and zip downloads, however no new CVEs will be added or updated.  Once the maintenance is complete, this list will resume it's normal update operations.
+
 # CVE List V5
 
 This repository is the official [CVE List](https://www.cve.org/ResourcesSupport/Glossary?activeTerm=glossaryCVEList).  It is a catalog of all [CVE Records](https://www.cve.org/ResourcesSupport/Glossary?activeTerm=glossaryRecord) identified by, or reported to, the [CVE Program](https://www.cve.org/).
