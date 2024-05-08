@@ -1,4 +1,4 @@
-> **Note**:  the upstream CVE REST Services is scheduled to be down for a scheduled update to CVE Schema 5.1 on May 8, 2024 between 2pm and 5pm EDT.  This means that this repository will not be able to contact CVE REST Services during that time.  The repository will remain available for normal git operations and zip downloads, however no new CVEs will be added or updated.  Once the maintenance is complete, this list will resume it's normal update operations.
+> **Note 2024-05-08 5:30pm**:  CVE REST Services was updated to the CVE Record Format Schema 5.1 on 2024-05-08 at 5:30pm EDT. The CVE Records that were added or updated previous to this time will continue to stay in CVE Record Format Schema 5.0 in this repository and on CVE REST Services, and you can continue to parse them using Schema 5.0.  However, all CVE Records updated after this time will require Schema 5.1.  Because Schema 5.1 is a superset of Schema 5.0, you should be able to parse the majority of records using Schema 5.1.  For the small set of records that cannot be parsed in Schema 5.1, the CNAs have been notified to update their records.
 
 # CVE List V5
 
