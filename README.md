@@ -6,7 +6,7 @@ This repository is the official [CVE List](https://www.cve.org/ResourcesSupport/
 
 This repository hosts downloadable files of CVE Records in the [CVE Record Format](https://www.cve.org/AllResources/CveServices#cve-json-5) (view the [schema](https://github.com/CVEProject/cve-schema)). They are updated regularly (about every 7 minutes) using the official CVE Services API.  You may search, download, and use the content hosted in this repository, per the [CVE Program Terms of Use](https://www.cve.org/Legal/TermsOfUse).
 
-**Legacy Format Downloads Available for Limited Time**—[Legacy format CVE List downloads](https://www.cve.org/Downloads#legacy-format) that are currently available for download on the CVE.ORG website, which are derived from CVE JSON 4.0, will be phased out in the first half of 2024 and [no longer updated after June 30, 2024](https://www.cve.org/Media/News/item/blog/2024/03/12/Phase-3-Deprecation-of-Legacy-Downloads-Underway). Learn more [here](https://www.cve.org/Media/News/item/blog/2024/03/12/Phase-3-Deprecation-of-Legacy-Downloads-Underway).
+**Legacy Format Downloads No Longer Supported**—All support for the legacy CVE content download formats (i.e., CSV, HTML, XML, and CVRF) ended on June 30, 2024. These legacy download formats, which will no longer be updated and were phased out over the first six months of 2024, have been replaced by this repository as the only supported method for CVE Record downloads. Learn more [here](https://www.cve.org/Media/News/item/blog/2024/07/02/Legacy-CVE-Download-Formats-No-Longer-Supported). 
 
 ## How to Download the CVE List
 
