@@ -8,8 +8,7 @@
 > 2.	newly scraped references that have been identified by the Secretariat on (or after) July 17.  
 To support downstream users in determining which references have been “copied” and which references have been provided by the Secretariat, the copied references will be labeled with an *x_transferred*  tag.   References provided by the Secretariat will have no tag.
 >
->After the deployment is complete, all Secretariat provided references for a CVE Record will be stored in the Secretariat Program Container of that record.  If there is no Secretariat provided enriched data (e.g, no scraped references) for a CVE Record, there will be no Secretariat Program Container associated with the CVE Record.
-> In addition, no Secretariat Program Container for a CVE record published after July 17 will have references that are tagged *x_transferred*.
+>Moving forward, all Secretariat provided references for a CVE Record will be stored in the Secretariat Program Container of that record.  If there is no Secretariat provided enriched data (e.g, no scraped references) for a CVE Record, there will be no Secretariat Program Container associated with the CVE Record.  Aslo note, CVE Records published after July 17 will have no references that are tagged *x_transferred*.
 >
 >**Parsing the Secretariat Program Container:** References in the Secretariat Program Container maintain the same format and properties as in the record's CNA container (see adp references definition/description [here](https://cveproject.github.io/cve-schema/schema/docs/#oneOf_i0_containers_adp_items_references)).  
 >
