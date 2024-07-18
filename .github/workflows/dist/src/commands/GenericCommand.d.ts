@@ -7,15 +7,23 @@ export declare abstract class GenericCommand {
     _name: string;
     /** the Command object from the commander library */
     _program: Command;
+    /** ----- cveUtils version string ----- ----- */
+    /** The version string is taken from the version string in package.json to promote a consistent
+     *  location for setting cveUtils metadata.  It is purposely set in "code" instead of in `.env`
+     *  because it should be "baked in" to the code instead of potentially changeable at runtime.
+     *  This way, if there is a problem in CVEProject/cvelistV5, the output in github actions will
+     *  reflect the actual version of this app, and it will
+     *  simplify figuring out what the exact code looked like based on the tag.
+     *
+     */
+    static __utilVersionString: string;
+    static getUtilityVersion(): string;
+    private static setUtilityVersion;
     /** constructor
      * @param name the command name
      * @param program the Command object (from main.ts)
      */
     constructor(name: string, program: Command);
-    /** ----- version string ----- ----- */
-    static __versionString: string;
-    static getUtilityVersion(): string;
-    static setUtilityVersion(versionString: string): string;
     _startTimestamp: number;
     /** resets the command timer */
     timerReset(): number;

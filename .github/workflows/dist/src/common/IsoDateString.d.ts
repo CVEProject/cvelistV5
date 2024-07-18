@@ -6,9 +6,16 @@
  *  Note that in the future, if necessary, we can extend what this class covers, but for now
  *    this strict and opinionated set is very useful for processing ISO Date+Time+TZ strings
  */
+/** a regular expression to represent an ISO Date+Time+TZ string
+ *  taken from https://stackoverflow.com/a/3143231/1274852
+ *  works for cases used in CVE representations
+ */
 export declare const IsoDateStringRegEx: RegExp;
 export declare const GregorianLeapDateRegEx: RegExp;
 export declare class IsoDateString {
+    static _minute: number;
+    static _hour: number;
+    static _day: number;
     _isoDateString: string;
     _date: Date;
     /** returns a IsoDateString object iff isoDateStr is a properly formatted ISO Date+Time+TZ string,

@@ -1,5 +1,6 @@
 import { CveId } from './CveId.js';
 import { CveRecordV5, CveMetadata, Containers } from '../generated/quicktools/CveRecordV5.js';
+import { CveSignature } from './CveSignature.js';
 export { CveId, CveIdError } from './CveId.js';
 export interface WriteFileOptions {
     prettyprint?: boolean;
@@ -45,6 +46,8 @@ export declare class CveRecord implements CveRecordV5 {
      *  @returns a JSON string
      */
     toJsonString(prettyPrint?: boolean): string;
+    /** generates a CveSignature */
+    static toCveSignature(filepath: any, sha256?: boolean): CveSignature;
     /** writes a CVE Record to a file in CVE JSON 5.0 format
      *  @param relFilepath relative path to the file
      *  @param prettyprint boolean to set whether to pretty print the output

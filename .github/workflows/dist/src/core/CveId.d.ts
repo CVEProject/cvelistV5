@@ -12,6 +12,11 @@ export declare type CveIdComponents = [
     string | undefined
 ];
 export declare class CveId {
+    /** kFirstYear: The first year CVE IDs started to be assigned.*/
+    static readonly kFirstYear: number;
+    /** kTestYear: An arbitrary year, that does not overlap with a valid CVE ID year, used for development and testing. */
+    static readonly kTestYear: number;
+    private static _years;
     /** internal representation of the CVE ID */
     id: string;
     /**
@@ -34,10 +39,9 @@ export declare class CveId {
      */
     getFullCvePath(): string;
     /**
-     * returns the official CVEProject/cvelistV5 URL to this CVE ID
+     * returns the raw github URL to this CVE ID
      */
     getRawGithubUrl(): string;
-    private static _years;
     /**
      * checks if a string is a valid CveID
      *  @param id a string to test for CveID validity
@@ -57,10 +61,10 @@ export declare class CveId {
      *  @returns true iff str is a valid CveID
      */
     static isValidCveId(id: string): boolean;
-    /** returns an array of CVE years represented as numbers [1999...2025]
-     *  the algorithm takes the current year from the current (local) time,
-     *    then adds 2 more years to end to accommodate future CVEs,
-     *    and adds 1970 in front
+    /** returns an array of CVE years represented as numbers (e.g. [1970,1999..2025])
+     *  the algorithm builds the valid years from 1999 to the environment variable CVES_MAX_ALLOWABLE_CVE_YEAR
+     *  (or if the environment variable is not present, current year + 2)
+     *  and adds 1970 in front for test CVEs
      */
     static getAllYears(): ReadonlyArray<number>;
     /** given a cveId, returns the git hub repository partial directory it should go into
@@ -73,4 +77,12 @@ export declare class CveId {
      *  @returns string representing the partial path the cve belongs in (e.g., /1999/1xxx/CVE-1999-0001)
      */
     static toCvePath(cveId: string | CveId): string;
+    /** comparator for use with sort() to sort CVE IDs "numerically" by year and then by the ID so that
+     *  CVE-1999-2001 comes before CVE-1999-10001 and CVE-2000-110022
+     *  This is needed because different systems (e.g., fs when sorting local directories, and opensearch sorted responses)
+     *  sort strings differently.  This standardizes on a single sorting algorithm
+     *  @param a string representing a CVE ID
+     *  @param b string representing another CVE ID
+     */
+    static comparator(a: string, b: string): number;
 }

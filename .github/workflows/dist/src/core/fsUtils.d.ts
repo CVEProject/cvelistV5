@@ -24,14 +24,18 @@ export declare class FsUtils {
      */
     static isSameContent(path1: string, path2: string, ignoreJsonProps?: string[]): boolean;
     /**
-     * Synchronously generate a zip file from an array of files (no directories)
-     * @param filepaths array of filenames to be zipped
-     * @param resultFilepath filepath for resulting zip file
-     * @param zipVirtualDir dir name in zip, defaults to `files`
-     *                      (for example, if you want to add all the files
-     *                       into a zip folder called abc,
-     *                        you would pass 'abc' here)
-     * @param dir path to directory where files are located
+     * Condense json data file.
+     * NOTE: Will overwrite the given file!
+     * condenseLevels:
+     *  0: pretty indent with 2 space
+     *  1: pretty indent with 1 space
+     *  2: strip leading whitespace from pretty file
+     *  3: minified / no whitespace
+     *
+     * @param condenseLevel level to condense to.
+     * @param filePath file with json data to be changed.
+     * @returns the new file size in bytes.
+     * @throws Error if invalid condenseLevel or invalid filePath argument.
      */
-    static generateZipfile(filepaths: string | string[], resultFilepath: string, zipVirtualDir?: string, dir?: string): void;
+    static condenseJsonDataFile(condenseLevel: number, filePath: string): number;
 }

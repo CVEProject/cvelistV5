@@ -1,1 +1,1 @@
-export {};
+export declare const GitTestsUsingGit: () => void;
