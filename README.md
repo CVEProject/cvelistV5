@@ -1,4 +1,4 @@
->**Note 2024-09-17 CVE Repository Historical Record Correction:** CVE Records originally published prior to 2023 with incorrect Reserved/Published/Update dates have been corrected.  This action corrected approximately 27,000 records that had erroneously been assigned incorrect Reserved, Published or Updated dates as part of JSON 5.0 CVE Record adoption.
+>**Note 2024-09-17 CVE Repository Historical Record Correction:** CVE Records originally published prior to 2023 with incorrect Reserved/Published/Update dates have been corrected.  This action corrected approximately 27,000 records that had been assigned incorrect Reserved, Published or Updated dates as part of JSON 5.0 CVE Record adoption.
 
 > **Note 2024-07-31 CVE Records may now contain a new container called the *CVE Program Container***:  This new container provides additional information added by the CVE Program to include Program-added references.  Users of this repository may need to process two containers.  See below for more information.   
 
