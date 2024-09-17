@@ -1,3 +1,5 @@
+>**Note 2024-09-17 CVE Repository Historical Record Correction:** CVE Records originally published prior to 2023 with incorrect Reserved/Published/Update dates have been corrected.  This action corrected approximately 27,000 records that had erroneously been assigned incorrect Reserved, Published or Updated dates as part of JSON 5.0 CVE Record adoption.
+
 > **Note 2024-07-31 CVE Records may now contain a new container called the *CVE Program Container***:  This new container provides additional information added by the CVE Program to include Program-added references.  Users of this repository may need to process two containers.  See below for more information.   
 
 > **Note 2024-05-08 5:30pm**:  CVE REST Services was updated to the CVE Record Format Schema 5.1 on 2024-05-08 at 5:30pm EDT.  With this update, a CVE Record in this repository may now be either a 5.0 or a 5.1 formatted record.   The format is reflected in the the "dataversion" field.  Users of this repository who "validate" CVE records are advised to validate records by using the  appropriate version of the schema (i.e, 5.0 or 5.1) as reflected in this field.  Users should not determine which schema to use based on the deployment date of the new format (i.e., 2024-05-08 at 5:30pm EDT)  as there are inconsistencies in published/updated date values.
@@ -72,7 +74,12 @@ This repository includes [release versions](https://github.com/CVEProject/cvelis
 
 The CVE Program is currently aware of the following issues with regard to CVE List downloads. These issues are currently being addressed by the [CVE Automation Working Group (AWG)](https://www.cve.org/ProgramOrganization/WorkingGroups#AutomationWorkingGroupAWG). Updates or resolutions will be noted here when available.
 
-1. **Added 3/28/2023:** CVE Records published prior to 2023 may have significant publication, reserved, and update date discrepancies. As a result, this repository should not be used for CVE production metrics at this time. A fix will be forthcoming. 
+1. **Updated 9/17/2024:** Some CVE Records published prior to 2023 had publication, reserved, and update date discrepancies. As of 9/17/2024 this has been corrected.
+   
+1. **Added 9/17/2024:** Publication and update date discrepancies exist for CVE recrods published by the MITRE CNA-LR between May 8, 2024 and June 7, 2024 (affecting approximately 515 records).  
+Users of this repository for CVE metrics (and other publication/udpate data senstive analysis) should be aware of this issue.  A fix will be forthcoming.
+
+    
 
 ## Reporting Issues 
 
