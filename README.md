@@ -72,7 +72,8 @@ This repository includes [release versions](https://github.com/CVEProject/cvelis
 
 The CVE Program is currently aware of the following issues with regard to CVE List downloads. These issues are currently being addressed by the [CVE Automation Working Group (AWG)](https://www.cve.org/ProgramOrganization/WorkingGroups#AutomationWorkingGroupAWG). Updates or resolutions will be noted here when available.
 
-1. **Added 3/28/2023:** CVE Records published prior to 2023 may have significant publication, reserved, and update date discrepancies. As a result, this repository should not be used for CVE production metrics at this time. A fix will be forthcoming. 
+1. ~~**Added 3/28/2023:** CVE Records published prior to 2023 may have significant publication, reserved, and update date discrepancies. As a result, this repository should not be used for CVE production metrics at this time. A fix will be forthcoming.~~
+    1. Updated 09/17/2024: Many of the CVE ID records affected by this issue have been corrected. Corrected fields include `cveMetadata.datePublished`, `cveMetadata.dateReserved`, and `containers.cna.providerMetadata.dateUpdated`. Other issues such as missing `cveMetadata.datePublished` and `cveMetadata.dateReserved` may persist and a fix will be forthcoming. The impact of these other issues affects a relatively smaller subset of the CVE ID records. 
 
 ## Reporting Issues 
 
