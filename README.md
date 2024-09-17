@@ -74,7 +74,7 @@ This repository includes [release versions](https://github.com/CVEProject/cvelis
 
 The CVE Program is currently aware of the following issues with regard to CVE List downloads. These issues are currently being addressed by the [CVE Automation Working Group (AWG)](https://www.cve.org/ProgramOrganization/WorkingGroups#AutomationWorkingGroupAWG). Updates or resolutions will be noted here when available.
 
-1. **Updated 9/17/2024:** Some CVE Records published prior to 2023 had publication, reserved, and update date discrepancies. As of 9/17/2024 this has been corrected.
+1. **Updated 9/17/2024:** Some CVE Records published prior to 2023 had incorrect publication, reserved, and update date. As of 9/17/2024 this has been corrected.
    
 1. **Added 9/17/2024:** Publication and update date discrepancies exist for CVE recrods published by the MITRE CNA-LR between May 8, 2024 and June 7, 2024 (affecting approximately 515 records).  
 Users of this repository for CVE metrics (and other publication/udpate data senstive analysis) should be aware of this issue.  A fix will be forthcoming.
