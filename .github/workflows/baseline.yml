@@ -2,6 +2,7 @@
 # Notes
 #   - This action MUST run every night, but ONLY AFTER midnight, or the business logic will not work correctly
 #   - This action no longer generates a release, since that is now the task of the CVE Release action (release.yml)
+#   - Currently, we fail this job if it runs before midnight
 name: CVE Midnight Baseline
 on:
   # at midnight (UTC) every night
@@ -47,10 +48,11 @@ jobs:
           # do a subset
           # zip -r cves.zip ./cves/1999 -x "*/\.*"
       - name: Use the Upload Artifact GitHub Action
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ needs.generate-name.outputs.v_current_run_timestamp }}_all_CVEs_at_midnight.zip
           path: ./cves.zip
+          overwrite: true
   # create_release:
   #   needs: [generate-name, create_artifacts]
   #   environment: development
