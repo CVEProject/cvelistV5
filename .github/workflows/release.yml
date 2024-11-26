@@ -9,6 +9,7 @@ on:
   # note also that github does not guarantee specified time, and it can start much later than specified
   schedule:
     - cron: '0 * * * *'
+
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
     inputs:
@@ -35,6 +36,7 @@ jobs:
       CVES_BASE_DIRECTORY: cves
       CVES_RECENT_ACTIVITIES_FILENAME: recent_activities.json
       CVES_DEFAULT_UPDATE_LOOKBACK_IN_MINS: 180
+      CVES_MAX_ALLOWABLE_CVE_YEAR: 2025
       CVE_API_ORG: ${{secrets.CVE_API_ORG}}
       CVE_API_USER: ${{secrets.CVE_API_USER}}
       CVE_API_KEY: ${{secrets.CVE_API_KEY}}
@@ -54,8 +56,12 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+      - name: Setup Node to specific version
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - name: Download artifact from baseline workflow
-        uses: dawidd6/action-download-artifact@v2
+        uses: dawidd6/action-download-artifact@v6
         with:
           workflow: baseline.yml
           workflow_conclusion: success
