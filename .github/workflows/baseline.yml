@@ -53,32 +53,3 @@ jobs:
           name: ${{ needs.generate-name.outputs.v_current_run_timestamp }}_all_CVEs_at_midnight.zip
           path: ./cves.zip
           overwrite: true
-  # create_release:
-  #   needs: [generate-name, create_artifacts]
-  #   environment: development
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     # - name: create release
-  #     #   id: create_release
-  #     #   uses: actions/create-release@v1
-  #     #   env:
-  #     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #     #   with:
-  #     #     tag_name: cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
-  #     #     release_name: CVE Release ${{ needs.generate-name.outputs.v_current_run_timestamp }}
-  #     #     draft: false
-  #     #     prerelease: false
-  #     #     # make_latest: true
-  #     # - name: Update release notes
-  #     #   run: echo "CVEs updated" > release_notes.md
-  #     - name: create release with source code as artifacts
-  #       uses: softprops/action-gh-release@v1
-  #       with:
-  #         name: CVE ${{ needs.generate-name.outputs.v_current_run_timestamp }}
-  #         # body: Descriptions for CVE ${{ needs.generate-name.outputs.v_current_run_timestamp }} goes here
-  #         body_path: ./release_notes.md
-  #         tag_name: cve_${{ needs.generate-name.outputs.v_current_run_timestamp }}
-  #         files: |
-  #           release_notes.md
-  #           ${{ needs.generate-name.outputs.v_current_run_timestamp }}_all_CVEs_at_midnight.zip
-  #           recent_activities.json

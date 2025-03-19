@@ -55,7 +55,7 @@ jobs:
         run: |
           ls
       - name: create release with source code as artifacts
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
         with:
           name: CVE ${{ env.timestamp }} at End of Day
           body_path: ./release_notes.md
