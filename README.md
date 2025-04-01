@@ -1,3 +1,6 @@
+>**Note 2025-04-02 CVE Services Maintenance April 2 beginning at approximately 1:00 PM (until approximately 5:00 PM EDT):**  The CVE Program will be performing maintenance on CVE Services on April 2 between 1 and 5 PM EDT.    This maintenance action will have no impact on existing CVE Records in the CVE List.   Although the CVE Repository will be available during this time, it will not be updated with any newly published records until the maintenance is complete.  
+>
+
 >**Note 2024-02-13 CVE Repository Maintenance February 13 beginning at approximately 9:30AM EST:**  The CVE Program will be performing maintenance on the CVE List repository to correct inaccuracies in the DATE fields of approximately 3,500 CVE Records (i.e., in the date published, date reserved, date updated, and date modified fields). Only DATE fields will be updated during this maintenance. The repository will remain operational during this time.
 >
 
