@@ -1,16 +1,16 @@
->**Note 2025-04-02 CVE Services Maintenance April 2 beginning at approximately 1:00 PM (until approximately 5:00 PM EDT):**  The CVE Program will be performing maintenance on CVE Services on April 2 between 1 and 5 PM EDT.    This maintenance action will have no impact on existing CVE Records in the CVE List.   Although the CVE Repository will be available during this time, it will not be updated with any newly published records until the maintenance is complete.  
+>**Note 2025-04-02 CVE Services Maintenance April 2 beginning at approximately 1:00 PM (until approximately 5:00 PM EDT):**  The CVE Program will be performing maintenance on CVE Services on April 2 between 1 and 5 PM EDT. This maintenance action will have no impact on existing CVE Records in the CVE List. Although the CVE Repository will be available during this time, it will not be updated with any newly published records until the maintenance is complete.  
 >
 
 >**Note 2024-02-13 CVE Repository Maintenance February 13 beginning at approximately 9:30AM EST:**  The CVE Program will be performing maintenance on the CVE List repository to correct inaccuracies in the DATE fields of approximately 3,500 CVE Records (i.e., in the date published, date reserved, date updated, and date modified fields). Only DATE fields will be updated during this maintenance. The repository will remain operational during this time.
 >
 
->**Note 2024-12-4 CVE REST Services was updated to use the CVE Record Format Schema 5.1.1 on Wednesday 12/4 at 4.00PM EST:** This update introduces “non breaking” changes containing new features that some CNAs may be interested in using in the future.  (see  [CVE Record Format version 5.1.1 Release notes](https://github.com/CVEProject/cve-schema/releases/tag/v5.1.1-rc2).  As a fully backwards compatible update (meaning that all previously published CVE Records will validate using this schema),  most users will see no  operational impact as a result of this change.    This schema defines the data format for CVE Records, regardless of whether they were published before or after December 4.  
+>**Note 2024-12-4 CVE REST Services was updated to use the CVE Record Format Schema 5.1.1 on Wednesday 12/4 at 4.00PM EST:** This update introduces “non breaking” changes containing new features that some CNAs may be interested in using in the future  (see  [CVE Record Format version 5.1.1 Release notes](https://github.com/CVEProject/cve-schema/releases/tag/v5.1.1-rc2).  As a fully backwards compatible update (meaning that all previously published CVE Records will validate using this schema), most users will see no operational impact as a result of this change. This schema defines the data format for CVE Records, regardless of whether they were published before or after December 4.  
 
->**Note 2024-09-17 CVE Repository Historical Record Correction:** CVE Records originally published prior to 2023 with incorrect Reserved/Published/Update dates have been corrected.  This action corrected approximately 27,000 records that had been assigned incorrect Reserved, Published or Updated dates as part of JSON 5.0 CVE Record adoption.
+>**Note 2024-09-17 CVE Repository Historical Record Correction:** CVE Records originally published prior to 2023 with incorrect Reserved/Published/Update dates have been corrected.  This action corrected approximately 27,000 records that had been assigned incorrect Reserved, Published, or Updated dates as part of JSON 5.0 CVE Record adoption.
 
 > **Note 2024-07-31 CVE Records may now contain a new container called the *CVE Program Container***:  This new container provides additional information added by the CVE Program to include Program-added references.  Users of this repository may need to process two containers.  See below for more information.   
 
-> **Note 2024-05-08 5:30pm**:  CVE REST Services was updated to the CVE Record Format Schema 5.1 on 2024-05-08 at 5:30pm EDT.  With this update, a CVE Record in this repository may now be either a 5.0 or a 5.1 formatted record.   The format is reflected in the the "dataversion" field.  Users of this repository who "validate" CVE records are advised to validate records by using the  appropriate version of the schema (i.e, 5.0 or 5.1) as reflected in this field.  Users should not determine which schema to use based on the deployment date of the new format (i.e., 2024-05-08 at 5:30pm EDT)  as there are inconsistencies in published/updated date values.
+> **Note 2024-05-08 5:30pm**:  CVE REST Services was updated to the CVE Record Format Schema 5.1 on 2024-05-08 at 5:30pm EDT.  With this update, a CVE Record in this repository may now be either a 5.0 or a 5.1 formatted record.  The format is reflected in the "dataversion" field.  Users of this repository who "validate" CVE Records are advised to validate records by using the appropriate version of the schema (i.e., 5.0 or 5.1) as reflected in this field.  Users should not determine which schema to use based on the deployment date of the new format (i.e., 2024-05-08 at 5:30pm EDT) as there are inconsistencies in published/updated date values.
 >  
 # CVE List V5
 
@@ -40,15 +40,15 @@ Specific JSON/CVE Record fields that will be in the CVE Program Container are as
 
 References in the CVE Program Container maintain the same format as references in a CNA Container.
 
-The CVE Program container may contain references that have the *x_transferred* tag.  References with this tag were read from the CNA container on 7/31/2024.  This is a "one time" copy to maintain the "state" of the CNA reference list as of 7/31/2024.   CVE Program-added references after this date will not have the *x_transfered" tag.
+The CVE Program container may contain references that have the *x_transferred* tag.  References with this tag were read from the CNA container on 7/31/2024.  This is a "one time" copy to maintain the "state" of the CNA reference list as of 7/31/2024.  CVE Program-added references after this date will not have the *x_transfered" tag.
 
-In the case of new CVE records created after 7/31/2024, if no Program provided enriched data is added, there will be no CVE Porgram Container associated with the CVE Record. 
+In the case of new CVE records created after 7/31/2024, if no Program provided enriched data is added, there will be no CVE Program Container associated with the CVE Record. 
 
 #### Implementation Considerations: 
 
-*Required Containers processing:*  After 7/31//2024, to retrieve all information about a reported vulnerability in the CVE Repositoyr, tool vendors and community users will need to examine the CVE Record CNA Container and the CVE Program Container (if one exists).  These two containers are minimially required to obtain the core information required by the Program.  All other ADP constainers remain optional from a Program perspective.
+*Required Containers processing:*  After 7/31//2024, to retrieve all information about a reported vulnerability in the CVE Repository, tool vendors and community users will need to examine the CVE Record CNA Container and the CVE Program Container (if one exists).  These two containers are minimally required to obtain the core information required by the Program.  All other ADP constainers remain optional from a Program perspective.
 
-*Potential for Duplicate References* The possibility of reference duplications is an artifact of having more than one organizatoin providing references in separate locations.   Downstream users will have to determine the appropriate way to resovle potential reference duplications between the CNA container and the CVE Program Container.   
+*Potential for Duplicate References* The possibility of reference duplications is an artifact of having more than one organization providing references in separate locations.  Downstream users will have to determine the appropriate way to resolve potential reference duplications between the CNA container and the CVE Program Container.   
 
 ### CISA-ADP Container
 
@@ -84,10 +84,8 @@ The CVE Program is currently aware of the following issues with regard to CVE Li
 
 1. **Updated 9/17/2024:** Some CVE Records published prior to 2023 had incorrect publication, reserved, and update date. As of 9/17/2024 this has been corrected.
    
-1. **Added 9/17/2024:** Publication and update date discrepancies exist for CVE recrods published by the MITRE CNA-LR between May 8, 2024 and June 7, 2024 (affecting approximately 515 records).  
-Users of this repository for CVE metrics (and other publication/udpate data senstive analysis) should be aware of this issue.  A fix will be forthcoming.
-
-    
+1. **Added 9/17/2024:** Publication and update date discrepancies exist for CVE Records published by the MITRE CNA-LR between May 8, 2024 and June 7, 2024 (affecting approximately 515 records).  
+Users of this repository for CVE metrics (and other publication/update data sensitive analysis) should be aware of this issue.  A fix will be forthcoming.
 
 ## Reporting Issues 
 
