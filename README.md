@@ -1,9 +1,3 @@
->**Note 2025-04-02 CVE Services Maintenance April 2 beginning at approximately 1:00 PM (until approximately 5:00 PM EDT):**  The CVE Program will be performing maintenance on CVE Services on April 2 between 1 and 5 PM EDT. This maintenance action will have no impact on existing CVE Records in the CVE List. Although the CVE Repository will be available during this time, it will not be updated with any newly published records until the maintenance is complete.  
->
-
->**Note 2024-02-13 CVE Repository Maintenance February 13 beginning at approximately 9:30AM EST:**  The CVE Program will be performing maintenance on the CVE List repository to correct inaccuracies in the DATE fields of approximately 3,500 CVE Records (i.e., in the date published, date reserved, date updated, and date modified fields). Only DATE fields will be updated during this maintenance. The repository will remain operational during this time.
->
-
 >**Note 2024-12-4 CVE REST Services was updated to use the CVE Record Format Schema 5.1.1 on Wednesday 12/4 at 4.00PM EST:** This update introduces “non breaking” changes containing new features that some CNAs may be interested in using in the future  (see  [CVE Record Format version 5.1.1 Release notes](https://github.com/CVEProject/cve-schema/releases/tag/v5.1.1-rc2).  As a fully backwards compatible update (meaning that all previously published CVE Records will validate using this schema), most users will see no operational impact as a result of this change. This schema defines the data format for CVE Records, regardless of whether they were published before or after December 4.  
 
 >**Note 2024-09-17 CVE Repository Historical Record Correction:** CVE Records originally published prior to 2023 with incorrect Reserved/Published/Update dates have been corrected.  This action corrected approximately 27,000 records that had been assigned incorrect Reserved, Published, or Updated dates as part of JSON 5.0 CVE Record adoption.
