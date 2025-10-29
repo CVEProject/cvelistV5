@@ -1,3 +1,14 @@
+>**Note 2025-10-29 CVE Record Format Version 5.2.0 update as of Wednesday 10/29 at 10:30 AM EST; Supporting Package URL (PURL) identifiers:**    This update to the CVE Record Format (to version 5.2.0) introduces "non breaking" changes to include:
+> - Adding support for PURL identifiers using the packageURL propertiy with the affected array items
+> - Adding additionaProperites equal to false for the affected array items.
+> - Updating example records CVE Records (including a PURL example)
+> - Adding Documentation and infrastructure improvemente preparing to better support future CVE Record Format updates.
+>   
+> For more details see:
+>   - The [CVE Program general announcement](https://www.cve.org/Media/News/item/blog/2025/10/29/CVE-Record-Format-CVE-Services-Updated)
+>   - The [CVE Record Format 5.2.0 Release notes](https://github.com/CVEProject/cve-schema/releases/tag/v5.2.0)
+>   - The [CVE Services 2.6.0 Release Notes](https://github.com/CVEProject/cve-services/releases/tag/v2.6.0)
+
 >**Note 2024-12-4 CVE REST Services was updated to use the CVE Record Format Schema 5.1.1 on Wednesday 12/4 at 4.00PM EST:** This update introduces “non breaking” changes containing new features that some CNAs may be interested in using in the future  (see  [CVE Record Format version 5.1.1 Release notes](https://github.com/CVEProject/cve-schema/releases/tag/v5.1.1-rc2).  As a fully backwards compatible update (meaning that all previously published CVE Records will validate using this schema), most users will see no operational impact as a result of this change. This schema defines the data format for CVE Records, regardless of whether they were published before or after December 4.  
 
 >**Note 2024-09-17 CVE Repository Historical Record Correction:** CVE Records originally published prior to 2023 with incorrect Reserved/Published/Update dates have been corrected.  This action corrected approximately 27,000 records that had been assigned incorrect Reserved, Published, or Updated dates as part of JSON 5.0 CVE Record adoption.
