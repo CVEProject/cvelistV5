@@ -1,5 +1,5 @@
 >**Note 2025-10-29 CVE Record Format Version 5.2.0 update as of Wednesday 10/29 at 10:30 AM EST; Supporting Package URL (PURL) identifiers:**    This update to the CVE Record Format (to version 5.2.0) introduces "non breaking" changes to include:
-> - Adding support for PURL identifiers using the packageURL propertiy with the affected array items
+> - Adding support for PURL identifiers using the packageURL property with the affected array items
 > - Adding additionaProperites equal to false for the affected array items.
 > - Updating example records CVE Records (including a PURL example)
 > - Adding Documentation and infrastructure improvemente preparing to better support future CVE Record Format updates.
