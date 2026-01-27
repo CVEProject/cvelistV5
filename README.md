@@ -1,8 +1,8 @@
 >**Note 2025-10-29 CVE Record Format Version 5.2.0 update as of Wednesday 10/29 at 10:30 AM EST; Supporting Package URL (PURL) identifiers:**    This update to the CVE Record Format (to version 5.2.0) introduces "non breaking" changes to include:
-> - Adding support for PURL identifiers using the packageURL propertiy with the affected array items
-> - Adding additionaProperites equal to false for the affected array items.
+> - Adding support for PURL identifiers using the packageURL property with the affected array items
+> - Adding additionalProperties equal to false for the affected array items.
 > - Updating example records CVE Records (including a PURL example)
-> - Adding Documentation and infrastructure improvemente preparing to better support future CVE Record Format updates.
+> - Adding Documentation and infrastructure improvement preparing to better support future CVE Record Format updates.
 >   
 > For more details see:
 >   - The [CVE Program general announcement](https://www.cve.org/Media/News/item/blog/2025/10/29/CVE-Record-Format-CVE-Services-Updated)
@@ -51,7 +51,7 @@ In the case of new CVE records created after 7/31/2024, if no Program provided e
 
 #### Implementation Considerations: 
 
-*Required Containers processing:*  After 7/31//2024, to retrieve all information about a reported vulnerability in the CVE Repository, tool vendors and community users will need to examine the CVE Record CNA Container and the CVE Program Container (if one exists).  These two containers are minimally required to obtain the core information required by the Program.  All other ADP constainers remain optional from a Program perspective.
+*Required Containers processing:*  After 7/31//2024, to retrieve all information about a reported vulnerability in the CVE Repository, tool vendors and community users will need to examine the CVE Record CNA Container and the CVE Program Container (if one exists).  These two containers are minimally required to obtain the core information required by the Program.  All other ADP containers remain optional from a Program perspective.
 
 *Potential for Duplicate References* The possibility of reference duplications is an artifact of having more than one organization providing references in separate locations.  Downstream users will have to determine the appropriate way to resolve potential reference duplications between the CNA container and the CVE Program Container.   
 
