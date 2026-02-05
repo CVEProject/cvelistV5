@@ -50,6 +50,6 @@ jobs:
       - name: Use the Upload Artifact GitHub Action
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ needs.generate-name.outputs.v_current_run_timestamp }}_all_CVEs_at_midnight.zip
+          name: ${{ needs.generate-name.outputs.v_current_run_timestamp }}_all_CVEs_at_midnight
           path: ./cves.zip
           overwrite: true
