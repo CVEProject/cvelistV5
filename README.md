@@ -1,3 +1,8 @@
+>**Note 2026-2-10 Record Date Normalization `deltaLog.json` file change**
+>
+>The deltaLog.json file normally retains a rolling 30 days worth of CVE record modification history. However, for the duration of the **Date Normalization process (2/16/26 - 2/27/26)**, the deltaLog.json file will temporarily only retain 15 days worth of history. As a significant number of records will be modified, this will limit the deltaLog.json file size. During this process, the file size will be monitored to see if the number of days stored needs to be further reduced to stay under the size limit. Please note, the full history of the deltaLog file is viewable in the Git history. Once the Date Normalization process is complete, the log file will be set to once again store 30 days worth of history.
+
+
 >**Note 2025-10-29 CVE Record Format Version 5.2.0 update as of Wednesday 10/29 at 10:30 AM EST; Supporting Package URL (PURL) identifiers:**    This update to the CVE Record Format (to version 5.2.0) introduces "non breaking" changes to include:
 > - Adding support for PURL identifiers using the packageURL propertiy with the affected array items
 > - Adding additionaProperites equal to false for the affected array items.
