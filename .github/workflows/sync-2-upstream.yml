@@ -1,0 +1,29 @@
+name: Sync to Upstream
+
+on:
+  schedule:
+      # scheduled every 5 minutes
+    - cron:  '*/5 * * * *'
+  # puede lanzarse desde la UI
+  workflow_dispatch:
+
+jobs:
+  sync_with_upstream:
+    runs-on: ubuntu-latest
+    name: Sync HEAD with upstream latest
+
+    steps:
+    # Step 1: run a standard checkout action, provided by github
+    - name: Checkout HEAD
+      uses: actions/checkout@v2
+      with:
+        ref: main
+
+    # Step 2: run this sync action - specify the upstream repo, upstream branch to sync with, and target sync branch
+    - name: Pull upstream changes
+      id: sync
+      uses: bdougie/Fork-Sync-With-Upstream-action@fork
+      with:
+        upstream_repository: CVEProject/cvelistV5
+        upstream_branch: main
+        target_branch: main                       # optional
