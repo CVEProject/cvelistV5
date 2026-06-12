@@ -28,9 +28,13 @@ jobs:
       CVE_API_KEY: ${{secrets.CVE_API_KEY}}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
+      - name: Setup Node to specific version
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
       - name: Get utility version
         id: version
         run: node ./.github/workflows/dist/index.js --version
@@ -55,7 +59,7 @@ jobs:
         run: |
           ls
       - name: create release with source code as artifacts
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
+        uses: softprops/action-gh-release@v3
         with:
           name: CVE ${{ env.timestamp }} at End of Day
           body_path: ./release_notes.md

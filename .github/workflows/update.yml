@@ -42,13 +42,13 @@ jobs:
       CVE_API_KEY: ${{secrets.CVE_API_KEY}}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 1
       - name: Setup Node to specific version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 18
+          node-version: 24
       - name: Update CVEs
         run: |
           export TEMP_TIMESTAMP=$(date '+%Y-%m-%d_%H%M_UTC')

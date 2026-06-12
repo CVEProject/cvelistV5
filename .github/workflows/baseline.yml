@@ -35,7 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: clone cves
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
       - name: tag repository
         run: |
           git tag ${{ needs.generate-name.outputs.v_current_run_timestamp }}_baseline
@@ -48,7 +48,7 @@ jobs:
           # do a subset
           # zip -r cves.zip ./cves/1999 -x "*/\.*"
       - name: Use the Upload Artifact GitHub Action
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ needs.generate-name.outputs.v_current_run_timestamp }}_all_CVEs_at_midnight.zip
           path: ./cves.zip

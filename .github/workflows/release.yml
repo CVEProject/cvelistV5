@@ -53,15 +53,15 @@ jobs:
       #     prerelease: false
       #     # make_latest: true
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Setup Node to specific version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v6
         with:
-          node-version: 18
+          node-version: 24
       - name: Download artifact from baseline workflow
-        uses: dawidd6/action-download-artifact@bf251b5aa9c2f7eeb574a96ee720e24f801b7c11
+        uses: dawidd6/action-download-artifact@v21
         with:
           workflow: baseline.yml
           workflow_conclusion: success
@@ -72,7 +72,7 @@ jobs:
           ls ./.github/workflows/dist
           node ./.github/workflows/dist/index.js delta
       - name: create release with source code as artifacts
-        uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844
+        uses: softprops/action-gh-release@v3
         with:
           name: CVE ${{ needs.generate-name.outputs.v_current_run_timestamp }}
           # body: Descriptions for CVE ${{ needs.generate-name.outputs.v_current_run_timestamp }} goes here
