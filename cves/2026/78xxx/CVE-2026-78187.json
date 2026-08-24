@@ -1,0 +1,198 @@
+{
+    "dataType": "CVE_RECORD",
+    "dataVersion": "5.2",
+    "cveMetadata": {
+        "cveId": "CVE-2026-78187",
+        "assignerOrgId": "1af790b2-7ee1-4545-860a-a788eba489b5",
+        "state": "PUBLISHED",
+        "assignerShortName": "VulDB",
+        "dateReserved": "2026-08-23T16:57:37.940Z",
+        "datePublished": "2026-08-24T04:30:08.597Z",
+        "dateUpdated": "2026-08-24T04:30:08.597Z"
+    },
+    "containers": {
+        "cna": {
+            "providerMetadata": {
+                "orgId": "1af790b2-7ee1-4545-860a-a788eba489b5",
+                "shortName": "VulDB",
+                "dateUpdated": "2026-08-24T04:30:08.597Z"
+            },
+            "title": "Piwigo Public Authentication cross site scripting",
+            "problemTypes": [
+                {
+                    "descriptions": [
+                        {
+                            "type": "CWE",
+                            "cweId": "CWE-79",
+                            "lang": "en",
+                            "description": "Cross Site Scripting"
+                        }
+                    ]
+                },
+                {
+                    "descriptions": [
+                        {
+                            "type": "CWE",
+                            "cweId": "CWE-94",
+                            "lang": "en",
+                            "description": "Code Injection"
+                        }
+                    ]
+                }
+            ],
+            "affected": [
+                {
+                    "vendor": "n/a",
+                    "product": "Piwigo",
+                    "versions": [
+                        {
+                            "version": "16.3.0",
+                            "status": "affected"
+                        },
+                        {
+                            "version": "16.4.0",
+                            "status": "unaffected"
+                        }
+                    ],
+                    "cpes": [
+                        "cpe:2.3:a:piwigo:piwigo:*:*:*:*:*:*:*:*"
+                    ],
+                    "modules": [
+                        "Public Authentication Page"
+                    ]
+                }
+            ],
+            "descriptions": [
+                {
+                    "lang": "en",
+                    "value": "A vulnerability has been found in Piwigo 16.3.0. This impacts an unknown function of the component Public Authentication Page. Such manipulation of the argument lang leads to cross site scripting. The attack may be performed from remote. A high complexity level is associated with this attack. The exploitability is said to be difficult. The exploit has been disclosed to the public and may be used. Upgrading to version 16.4.0 will fix this issue. The name of the patch is 5277a7dee4b8f1a174f1d69e1e2a4e1c82a3fc9e. It is recommended to upgrade the affected component."
+                }
+            ],
+            "metrics": [
+                {
+                    "cvssV4_0": {
+                        "version": "4.0",
+                        "baseScore": 2.3,
+                        "vectorString": "CVSS:4.0/AV:N/AC:H/AT:N/PR:N/UI:P/VC:N/VI:L/VA:N/SC:N/SI:N/SA:N/E:P",
+                        "baseSeverity": "LOW"
+                    }
+                },
+                {
+                    "cvssV3_1": {
+                        "version": "3.1",
+                        "baseScore": 3.1,
+                        "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N/E:P/RL:O/RC:C",
+                        "baseSeverity": "LOW"
+                    }
+                },
+                {
+                    "cvssV3_0": {
+                        "version": "3.0",
+                        "baseScore": 3.1,
+                        "vectorString": "CVSS:3.0/AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:L/A:N/E:P/RL:O/RC:C",
+                        "baseSeverity": "LOW"
+                    }
+                },
+                {
+                    "cvssV2_0": {
+                        "version": "2.0",
+                        "baseScore": 2.6,
+                        "vectorString": "AV:N/AC:H/Au:N/C:N/I:P/A:N/E:POC/RL:OF/RC:C"
+                    }
+                }
+            ],
+            "timeline": [
+                {
+                    "time": "2026-08-23T00:00:00.000Z",
+                    "lang": "en",
+                    "value": "Advisory disclosed"
+                },
+                {
+                    "time": "2026-08-23T02:00:00.000Z",
+                    "lang": "en",
+                    "value": "VulDB entry created"
+                },
+                {
+                    "time": "2026-08-23T19:02:44.000Z",
+                    "lang": "en",
+                    "value": "VulDB entry last update"
+                }
+            ],
+            "credits": [
+                {
+                    "lang": "en",
+                    "value": "Leousum (VulDB User)",
+                    "type": "reporter"
+                }
+            ],
+            "references": [
+                {
+                    "url": "https://vuldb.com/vuln/394569",
+                    "name": "VDB-394569 | Piwigo Public Authentication cross site scripting",
+                    "tags": [
+                        "vdb-entry",
+                        "technical-description"
+                    ]
+                },
+                {
+                    "url": "https://vuldb.com/vuln/394569/cti",
+                    "name": "VDB-394569 | CTI Indicators (IOB, IOC, TTP, IOA)",
+                    "tags": [
+                        "signature",
+                        "permissions-required"
+                    ]
+                },
+                {
+                    "url": "https://vuldb.com/cve/CVE-2026-78187",
+                    "name": "CVE-2026-78187 | CVE Analysis and Report",
+                    "tags": [
+                        "third-party-advisory"
+                    ]
+                },
+                {
+                    "url": "https://vuldb.com/submit/885228",
+                    "name": "Submit #885228 | Piwigo 16.3.0 Cross Site Scripting",
+                    "tags": [
+                        "third-party-advisory"
+                    ]
+                },
+                {
+                    "url": "https://github.com/Piwigo/Piwigo/security/advisories/GHSA-rr39-mf4j-6594",
+                    "tags": [
+                        "related"
+                    ]
+                },
+                {
+                    "url": "https://github.com/Leousum/VulnPoC/blob/main/Piwigo%2016.3.0/reflected_XSS.md",
+                    "tags": [
+                        "exploit"
+                    ]
+                },
+                {
+                    "url": "https://github.com/Piwigo/Piwigo/commit/5277a7dee4b8f1a174f1d69e1e2a4e1c82a3fc9e",
+                    "tags": [
+                        "patch"
+                    ]
+                },
+                {
+                    "url": "https://github.com/Piwigo/Piwigo/releases/tag/16.4.0",
+                    "tags": [
+                        "patch"
+                    ]
+                },
+                {
+                    "url": "https://github.com/Piwigo/Piwigo/",
+                    "tags": [
+                        "product"
+                    ]
+                }
+            ],
+            "tags": [
+                "x_open-source"
+            ],
+            "x_generator": [
+                "VulDB PVTS v202608"
+            ]
+        }
+    }
+}
