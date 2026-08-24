@@ -1,0 +1,31 @@
+{
+    "dataType": "CVE_RECORD",
+    "dataVersion": "5.2",
+    "cveMetadata": {
+        "cveId": "CVE-2026-16249",
+        "assignerOrgId": "1bfdd5d7-9bf6-4a53-96ea-42e2716d7a81",
+        "state": "REJECTED",
+        "dateReserved": "2026-07-20T07:19:41.979Z",
+        "dateUpdated": "2026-08-24T09:21:37.286Z",
+        "dateRejected": "2026-08-24T09:19:36.825Z",
+        "assignerShortName": "WPScan"
+    },
+    "containers": {
+        "cna": {
+            "providerMetadata": {
+                "orgId": "1bfdd5d7-9bf6-4a53-96ea-42e2716d7a81",
+                "shortName": "WPScan",
+                "dateUpdated": "2026-08-24T09:21:37.286Z"
+            },
+            "rejectedReasons": [
+                {
+                    "lang": "en",
+                    "value": "This CVE ID is a duplicate of CVE-2026-15303 and was never published. Both IDs were assigned to the same vulnerability in the 6Storage Rentals WordPress plugin. All CVE users should reference CVE-2026-15303 instead of this ID."
+                }
+            ],
+            "x_generator": {
+                "engine": "cvelib 1.8.0"
+            }
+        }
+    }
+}
