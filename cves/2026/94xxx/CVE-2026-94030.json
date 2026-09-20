@@ -1,0 +1,184 @@
+{
+    "dataType": "CVE_RECORD",
+    "dataVersion": "5.2",
+    "cveMetadata": {
+        "cveId": "CVE-2026-94030",
+        "assignerOrgId": "1af790b2-7ee1-4545-860a-a788eba489b5",
+        "state": "PUBLISHED",
+        "assignerShortName": "VulDB",
+        "dateReserved": "2026-09-19T17:40:36.500Z",
+        "datePublished": "2026-09-20T13:30:10.836Z",
+        "dateUpdated": "2026-09-20T13:30:10.836Z"
+    },
+    "containers": {
+        "cna": {
+            "providerMetadata": {
+                "orgId": "1af790b2-7ee1-4545-860a-a788eba489b5",
+                "shortName": "VulDB",
+                "dateUpdated": "2026-09-20T13:30:10.836Z"
+            },
+            "title": "SerenityOS LibGfx BMPLoader.cpp decode_bmp_pixel_data integer overflow",
+            "problemTypes": [
+                {
+                    "descriptions": [
+                        {
+                            "type": "CWE",
+                            "cweId": "CWE-190",
+                            "lang": "en",
+                            "description": "Integer Overflow"
+                        }
+                    ]
+                },
+                {
+                    "descriptions": [
+                        {
+                            "type": "CWE",
+                            "cweId": "CWE-189",
+                            "lang": "en",
+                            "description": "Numeric Error"
+                        }
+                    ]
+                }
+            ],
+            "affected": [
+                {
+                    "vendor": "n/a",
+                    "product": "SerenityOS",
+                    "versions": [
+                        {
+                            "version": "3d83e4509fd20d7438e1ae8470ffe668c136229c",
+                            "status": "affected"
+                        }
+                    ],
+                    "cpes": [
+                        "cpe:2.3:o:serenityos:serenityos:*:*:*:*:*:*:*:*"
+                    ],
+                    "modules": [
+                        "LibGfx"
+                    ]
+                }
+            ],
+            "descriptions": [
+                {
+                    "lang": "en",
+                    "value": "A security vulnerability has been detected in SerenityOS up to 3d83e4509fd20d7438e1ae8470ffe668c136229c. Affected by this vulnerability is the function decode_bmp_pixel_data of the file Userland/Libraries/LibGfx/ImageFormats/BMPLoader.cpp of the component LibGfx. The manipulation of the argument height leads to integer overflow. The attack is possible to be carried out remotely. The attack's complexity is rated as high. The exploitation appears to be difficult. The exploit has been disclosed publicly and may be used. This product adopts a rolling release strategy to maintain continuous delivery. Therefore, version details for affected or updated releases cannot be specified. The identifier of the patch is 007041bb2dd6d140c9e707caddfb0a49ecf96469. Applying a patch is the recommended action to fix this issue. This was reproducible with a minimal 55-byte PoC via the standard image-decode fuzz target but evidence for an actual exploitable defect is thin."
+                }
+            ],
+            "metrics": [
+                {
+                    "cvssV4_0": {
+                        "version": "4.0",
+                        "baseScore": 2.3,
+                        "vectorString": "CVSS:4.0/AV:N/AC:H/AT:N/PR:N/UI:P/VC:N/VI:N/VA:L/SC:N/SI:N/SA:N/E:P",
+                        "baseSeverity": "LOW"
+                    }
+                },
+                {
+                    "cvssV3_1": {
+                        "version": "3.1",
+                        "baseScore": 3.1,
+                        "vectorString": "CVSS:3.1/AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:L/E:P/RL:O/RC:C",
+                        "baseSeverity": "LOW"
+                    }
+                },
+                {
+                    "cvssV3_0": {
+                        "version": "3.0",
+                        "baseScore": 3.1,
+                        "vectorString": "CVSS:3.0/AV:N/AC:H/PR:N/UI:R/S:U/C:N/I:N/A:L/E:P/RL:O/RC:C",
+                        "baseSeverity": "LOW"
+                    }
+                },
+                {
+                    "cvssV2_0": {
+                        "version": "2.0",
+                        "baseScore": 2.6,
+                        "vectorString": "AV:N/AC:H/Au:N/C:N/I:N/A:P/E:POC/RL:OF/RC:C"
+                    }
+                }
+            ],
+            "timeline": [
+                {
+                    "time": "2026-09-19T00:00:00.000Z",
+                    "lang": "en",
+                    "value": "Advisory disclosed"
+                },
+                {
+                    "time": "2026-09-19T02:00:00.000Z",
+                    "lang": "en",
+                    "value": "VulDB entry created"
+                },
+                {
+                    "time": "2026-09-19T19:45:58.000Z",
+                    "lang": "en",
+                    "value": "VulDB entry last update"
+                }
+            ],
+            "credits": [
+                {
+                    "lang": "en",
+                    "value": "cz_seuer (VulDB User)",
+                    "type": "reporter"
+                }
+            ],
+            "references": [
+                {
+                    "url": "https://vuldb.com/vuln/407958",
+                    "name": "VDB-407958 | SerenityOS LibGfx BMPLoader.cpp decode_bmp_pixel_data integer overflow",
+                    "tags": [
+                        "vdb-entry",
+                        "technical-description"
+                    ]
+                },
+                {
+                    "url": "https://vuldb.com/vuln/407958/cti",
+                    "name": "VDB-407958 | CTI Indicators (IOB, IOC, IOA)",
+                    "tags": [
+                        "signature",
+                        "permissions-required"
+                    ]
+                },
+                {
+                    "url": "https://vuldb.com/cve/CVE-2026-94030",
+                    "name": "CVE-2026-94030 | CVE Analysis and Report",
+                    "tags": [
+                        "third-party-advisory"
+                    ]
+                },
+                {
+                    "url": "https://vuldb.com/submit/945895",
+                    "name": "Submit #945895 | SerenityOS SerenityOS LibGfx >= d76ad23 Integer Overflow",
+                    "tags": [
+                        "third-party-advisory"
+                    ]
+                },
+                {
+                    "url": "https://github.com/SerenityOS/serenity/issues/26957",
+                    "tags": [
+                        "exploit",
+                        "issue-tracking"
+                    ]
+                },
+                {
+                    "url": "https://github.com/SerenityOS/serenity/pull/26958",
+                    "tags": [
+                        "issue-tracking",
+                        "patch"
+                    ]
+                },
+                {
+                    "url": "https://github.com/SerenityOS/serenity/commit/007041bb2dd6d140c9e707caddfb0a49ecf96469",
+                    "tags": [
+                        "patch"
+                    ]
+                }
+            ],
+            "tags": [
+                "x_open-source"
+            ],
+            "x_generator": [
+                "VulDB PVTS v202609"
+            ]
+        }
+    }
+}
