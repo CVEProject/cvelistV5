@@ -68,6 +68,8 @@ jobs:
           skip_unpack: true
           if_no_artifact_found: fail
       - name: build delta files
+        env:
+          RELEASE_TIMESTAMP: ${{ needs.generate-name.outputs.v_current_run_timestamp }}
         run: |
           ls ./.github/workflows/dist
           node ./.github/workflows/dist/index.js delta
