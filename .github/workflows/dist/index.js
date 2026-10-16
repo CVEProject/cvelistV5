@@ -45291,7 +45291,10 @@ class DeltaCommand extends GenericCommand {
             deltaFs.writeTextFile(`release_notes.md`);
         }
         else {
-            const timestamp = new Date();
+            const releaseTs = process.env.RELEASE_TIMESTAMP;
+            const timestamp = releaseTs
+                ? (() => { const m = releaseTs.match(/^(\d{4}-\d{2}-\d{2})_(\d{2})00Z$/); return m ? new Date(`${m[1]}T${m[2]}:00:00Z`) : new Date(); })()
+                : new Date();
             const delta = await git_Git.newDeltaFromGitHistory(options.start);
             // console.log(`delta=${JSON.stringify(delta, null, 2)}`);
             console.log(delta.toText());
