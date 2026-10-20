@@ -1,0 +1,181 @@
+{
+    "dataType": "CVE_RECORD",
+    "dataVersion": "5.2",
+    "cveMetadata": {
+        "cveId": "CVE-2012-20002",
+        "assignerOrgId": "83251b91-4cc7-4094-a5c7-464a1b83ea10",
+        "state": "PUBLISHED",
+        "assignerShortName": "VulnCheck",
+        "dateReserved": "2026-10-14T20:25:21.968Z",
+        "datePublished": "2026-10-20T20:31:18.351Z",
+        "dateUpdated": "2026-10-20T20:31:18.351Z"
+    },
+    "containers": {
+        "cna": {
+            "providerMetadata": {
+                "orgId": "83251b91-4cc7-4094-a5c7-464a1b83ea10",
+                "shortName": "VulnCheck",
+                "dateUpdated": "2026-10-20T20:31:18.351Z"
+            },
+            "datePublic": "2012-05-25T00:00:00.000Z",
+            "title": "TinyMCE Thumbnail Gallery WordPress Plugin < 1.1.0 Path Traversal via download-image.php",
+            "descriptions": [
+                {
+                    "lang": "en",
+                    "value": "TinyMCE Thumbnail Gallery plugin for WordPress before 1.1.0 contains a path traversal vulnerability that allows unauthenticated attackers to read arbitrary files via the href parameter. Attackers can send GET requests to /php/download-image.php with traversal sequences like ../../../../wp-config.php to retrieve database credentials and system files. Exploitation evidence was first observed by the Shadowserver Foundation on 2023-10-19."
+                }
+            ],
+            "tags": [
+                "x_known-exploited-vulnerability",
+                "x_open-source"
+            ],
+            "problemTypes": [
+                {
+                    "descriptions": [
+                        {
+                            "lang": "en",
+                            "description": "Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')",
+                            "cweId": "CWE-22",
+                            "type": "CWE"
+                        }
+                    ]
+                }
+            ],
+            "affected": [
+                {
+                    "defaultStatus": "unaffected",
+                    "vendor": "James Charlesworth",
+                    "product": "TinyMCE Thumbnail Gallery",
+                    "versions": [
+                        {
+                            "version": "0.10",
+                            "status": "affected",
+                            "versionType": "semver",
+                            "lessThan": "1.1.0"
+                        }
+                    ]
+                }
+            ],
+            "metrics": [
+                {
+                    "format": "CVSS",
+                    "scenarios": [
+                        {
+                            "lang": "en",
+                            "value": "GENERAL"
+                        }
+                    ],
+                    "cvssV4_0": {
+                        "attackVector": "NETWORK",
+                        "attackComplexity": "LOW",
+                        "attackRequirements": "NONE",
+                        "privilegesRequired": "NONE",
+                        "userInteraction": "NONE",
+                        "vulnConfidentialityImpact": "HIGH",
+                        "subConfidentialityImpact": "NONE",
+                        "vulnIntegrityImpact": "NONE",
+                        "subIntegrityImpact": "NONE",
+                        "vulnAvailabilityImpact": "NONE",
+                        "subAvailabilityImpact": "NONE",
+                        "exploitMaturity": "NOT_DEFINED",
+                        "Safety": "NOT_DEFINED",
+                        "Automatable": "NOT_DEFINED",
+                        "Recovery": "NOT_DEFINED",
+                        "valueDensity": "NOT_DEFINED",
+                        "vulnerabilityResponseEffort": "NOT_DEFINED",
+                        "providerUrgency": "NOT_DEFINED",
+                        "version": "4.0",
+                        "baseSeverity": "HIGH",
+                        "baseScore": 8.7,
+                        "vectorString": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:H/VI:N/VA:N/SC:N/SI:N/SA:N"
+                    }
+                },
+                {
+                    "format": "CVSS",
+                    "scenarios": [
+                        {
+                            "lang": "en",
+                            "value": "GENERAL"
+                        }
+                    ],
+                    "cvssV3_1": {
+                        "attackVector": "NETWORK",
+                        "attackComplexity": "LOW",
+                        "privilegesRequired": "NONE",
+                        "userInteraction": "NONE",
+                        "scope": "UNCHANGED",
+                        "confidentialityImpact": "HIGH",
+                        "integrityImpact": "NONE",
+                        "availabilityImpact": "NONE",
+                        "version": "3.1",
+                        "baseSeverity": "HIGH",
+                        "baseScore": 7.5,
+                        "vectorString": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:N/A:N"
+                    }
+                }
+            ],
+            "references": [
+                {
+                    "url": "https://packetstorm.news/files/id/113417/",
+                    "name": "Packet Storm 113417",
+                    "tags": [
+                        "exploit"
+                    ]
+                },
+                {
+                    "url": "https://www.exploit-db.com/exploits/19022",
+                    "name": "EDB-19022",
+                    "tags": [
+                        "exploit"
+                    ]
+                },
+                {
+                    "url": "https://wpscan.com/vulnerability/4a49b023-c1c9-4cc4-a2fd-af5f911bb400",
+                    "name": "WPScan Advisory",
+                    "tags": [
+                        "third-party-advisory"
+                    ]
+                },
+                {
+                    "url": "https://github.com/projectdiscovery/nuclei-templates/blob/main/http/vulnerabilities/wordpress/wp-tinymce-lfi.yaml",
+                    "name": "Nuclei Template",
+                    "tags": [
+                        "technical-description"
+                    ]
+                },
+                {
+                    "url": "https://wordpress.org/plugins/tinymce-thumbnail-gallery/",
+                    "name": "WordPress Download Page",
+                    "tags": [
+                        "product"
+                    ]
+                },
+                {
+                    "name": "VulnCheck Advisory: TinyMCE Thumbnail Gallery WordPress Plugin < 1.1.0 Path Traversal via download-image.php",
+                    "tags": [
+                        "third-party-advisory"
+                    ],
+                    "url": "https://www.vulncheck.com/advisories/tinymce-thumbnail-gallery-wordpress-plugin-1.1.0-path-traversal-via-download-image-php"
+                }
+            ],
+            "credits": [
+                {
+                    "lang": "en",
+                    "value": "Sammy FORGIT",
+                    "type": "finder"
+                },
+                {
+                    "lang": "en",
+                    "value": "The Shadowserver Foundation",
+                    "type": "reporter"
+                }
+            ],
+            "source": {
+                "discovery": "UNKNOWN"
+            },
+            "x_generator": {
+                "engine": "vulncheck-kclub"
+            }
+        }
+    }
+}
