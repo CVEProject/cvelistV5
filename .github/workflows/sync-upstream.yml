@@ -3,24 +3,26 @@ name: Auto Sync CVE Database
 
 on:
   schedule:
-    - cron: "17,47 * * * *"
+    # Every hour (UTC)
+    - cron: "0 * * * *"
+
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: cve-upstream-sync
+  group: cve-database-sync
   cancel-in-progress: false
 
 jobs:
   sync:
     name: Sync Official CVE Database
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 45
 
     steps:
-      - name: Checkout fork
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           ref: main
@@ -33,47 +35,104 @@ jobs:
           git config user.email \
             "41898282+github-actions[bot]@users.noreply.github.com"
 
-      - name: Fetch upstream CVE database
-        run: |
-          git remote add upstream \
-            https://github.com/CVEProject/cvelistV5.git
+          git config core.autocrlf false
 
-          git fetch upstream main
-
-      - name: Check for upstream updates
-        id: check
+      - name: Configure upstream repository
         run: |
-          if git merge-base --is-ancestor \
-            upstream/main HEAD; then
-            echo "needs_sync=false" >> "$GITHUB_OUTPUT"
-            echo "Already synchronized."
-          else
-            echo "needs_sync=true" >> "$GITHUB_OUTPUT"
-            echo "New upstream changes detected."
+          if ! git remote get-url upstream >/dev/null 2>&1; then
+            git remote add upstream \
+              https://github.com/CVEProject/cvelistV5.git
           fi
 
-      - name: Merge upstream updates
-        if: steps.check.outputs.needs_sync == 'true'
-        run: |
-          git merge --no-edit upstream/main
+          git remote -v
 
-      - name: Push updated fork
-        if: steps.check.outputs.needs_sync == 'true'
+      - name: Sync CVE database with retry
+        id: sync
+        shell: bash
         run: |
-          git push origin HEAD:main
+          set -euo pipefail
 
-      - name: Sync summary
-        if: always()
+          MAX_RETRIES=5
+
+          for attempt in $(seq 1 "$MAX_RETRIES"); do
+            echo "================================"
+            echo "Synchronization attempt $attempt/$MAX_RETRIES"
+            echo "================================"
+
+            # Fetch latest fork and official database.
+            git fetch origin main
+            git fetch upstream main
+
+            # Start from the newest fork state.
+            git checkout -B sync-cve origin/main
+
+            # Check whether upstream is already included.
+            if git merge-base --is-ancestor upstream/main HEAD; then
+              echo "CVE database is already up to date."
+
+              echo "updated=false" >> "$GITHUB_OUTPUT"
+              echo "status=up-to-date" >> "$GITHUB_OUTPUT"
+
+              exit 0
+            fi
+
+            # Integrate upstream without rewriting history.
+            echo "Merging official CVE database..."
+
+            if ! git merge --no-edit upstream/main; then
+              echo "::error::Upstream merge conflict."
+
+              git merge --abort || true
+
+              echo "Manual conflict resolution is required."
+              exit 1
+            fi
+
+            # Nothing to push if another process already
+            # synchronized the database.
+            if git merge-base --is-ancestor HEAD origin/main; then
+              echo "No new commits to push."
+
+              echo "updated=false" >> "$GITHUB_OUTPUT"
+              echo "status=up-to-date" >> "$GITHUB_OUTPUT"
+
+              exit 0
+            fi
+
+            # Safe push (never force).
+            echo "Pushing synchronized CVE database..."
+
+            if git push origin HEAD:main; then
+              echo "CVE database synchronized successfully."
+
+              echo "updated=true" >> "$GITHUB_OUTPUT"
+              echo "status=success" >> "$GITHUB_OUTPUT"
+
+              exit 0
+            fi
+
+            echo "::warning::Push rejected on attempt $attempt."
+
+            if [ "$attempt" -eq "$MAX_RETRIES" ]; then
+              echo "::error::All push attempts failed."
+              exit 1
+            fi
+
+            # Back off before refetching remote commits.
+            sleep $((attempt * 10))
+          done
+
+      - name: Write synchronization summary
+        if: success()
+        shell: bash
         run: |
-          echo "## CVE Database Sync" >> "$GITHUB_STEP_SUMMARY"
-          echo "" >> "$GITHUB_STEP_SUMMARY"
-          echo "- Source: CVEProject/cvelistV5" \
-            >> "$GITHUB_STEP_SUMMARY"
-          echo "- Target: Pepperjack-svg/cvelistV5" \
-            >> "$GITHUB_STEP_SUMMARY"
-          echo "- Branch: main" \
-            >> "$GITHUB_STEP_SUMMARY"
-          echo "- Schedule: Every 30 minutes" \
-            >> "$GITHUB_STEP_SUMMARY"
-          echo "- Result: ${{ job.status }}" \
-            >> "$GITHUB_STEP_SUMMARY"
+          {
+            echo "## CVE Database Sync"
+            echo ""
+            echo "**Repository:** $GITHUB_REPOSITORY"
+            echo "**Source:** CVEProject/cvelistV5"
+            echo "**Branch:** main"
+            echo "**Status:** ${{ steps.sync.outputs.status }}"
+            echo "**Updated:** ${{ steps.sync.outputs.updated }}"
+            echo "**Time (UTC):** $(date -u)"
+          } >> "$GITHUB_STEP_SUMMARY"
