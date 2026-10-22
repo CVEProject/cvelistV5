@@ -1,0 +1,79 @@
+
+name: Auto Sync CVE Database
+
+on:
+  schedule:
+    - cron: "17,47 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cve-upstream-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Sync Official CVE Database
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout fork
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Fetch upstream CVE database
+        run: |
+          git remote add upstream \
+            https://github.com/CVEProject/cvelistV5.git
+
+          git fetch upstream main
+
+      - name: Check for upstream updates
+        id: check
+        run: |
+          if git merge-base --is-ancestor \
+            upstream/main HEAD; then
+            echo "needs_sync=false" >> "$GITHUB_OUTPUT"
+            echo "Already synchronized."
+          else
+            echo "needs_sync=true" >> "$GITHUB_OUTPUT"
+            echo "New upstream changes detected."
+          fi
+
+      - name: Merge upstream updates
+        if: steps.check.outputs.needs_sync == 'true'
+        run: |
+          git merge --no-edit upstream/main
+
+      - name: Push updated fork
+        if: steps.check.outputs.needs_sync == 'true'
+        run: |
+          git push origin HEAD:main
+
+      - name: Sync summary
+        if: always()
+        run: |
+          echo "## CVE Database Sync" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Source: CVEProject/cvelistV5" \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo "- Target: Pepperjack-svg/cvelistV5" \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo "- Branch: main" \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo "- Schedule: Every 30 minutes" \
+            >> "$GITHUB_STEP_SUMMARY"
+          echo "- Result: ${{ job.status }}" \
+            >> "$GITHUB_STEP_SUMMARY"
